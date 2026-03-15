@@ -3,6 +3,9 @@ export const BUBBLE_CSS = `
   position: fixed;
   z-index: 2147483641;
   width: 260px;
+  max-height: min(380px, calc(100vh - 120px));
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
   border: 1.5px solid #e5e7eb;
   border-radius: 16px;
@@ -73,8 +76,22 @@ export const BUBBLE_CSS = `
   padding: 2px 4px;
   border-radius: 4px;
   pointer-events: auto;
+  flex-shrink: 0;
 }
 .tmrg-bubble-dismiss:hover { color: #374151; background: #f3f4f6; }
+
+/* Scrollable text area */
+.tmrg-bubble-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  /* subtle scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+.tmrg-bubble-scroll::-webkit-scrollbar { width: 4px; }
+.tmrg-bubble-scroll::-webkit-scrollbar-track { background: transparent; }
+.tmrg-bubble-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
 
 /* Text */
 .tmrg-bubble-text {
@@ -118,6 +135,7 @@ export const BUBBLE_CSS = `
   gap: 6px;
   margin-top: 10px;
   align-items: flex-end;
+  flex-shrink: 0;
 }
 .tmrg-bubble-input {
   flex: 1;
@@ -156,6 +174,7 @@ export const BUBBLE_CSS = `
   flex-wrap: wrap;
   gap: 5px;
   margin-top: 8px;
+  flex-shrink: 0;
 }
 .tmrg-chip {
   font-size: 11.5px;

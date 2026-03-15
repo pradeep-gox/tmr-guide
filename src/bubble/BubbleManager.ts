@@ -12,6 +12,7 @@ export type BubbleOnDismiss = () => void;
 
 export class BubbleManager {
   private bubble: HTMLElement | null = null;
+  private scrollEl: HTMLElement | null = null;
   private textEl: HTMLElement | null = null;
   private followupsEl: HTMLElement | null = null;
   private inputRow: HTMLElement | null = null;
@@ -20,6 +21,8 @@ export class BubbleManager {
   private typeTimer: ReturnType<typeof setTimeout> | null = null;
   private onAsk: BubbleOnAsk | null = null;
   private onDismiss: BubbleOnDismiss | null = null;
+  /** Called after typewriter finishes so the host can re-clamp position */
+  private repositionFn: (() => void) | null = null;
 
   init(root: HTMLElement, onAsk: BubbleOnAsk, onDismiss: BubbleOnDismiss): void {
     injectCSS("tmrg-bubble-css", BUBBLE_CSS);
@@ -38,27 +41,33 @@ export class BubbleManager {
     dismiss.addEventListener("click", () => onDismiss());
     bubble.appendChild(dismiss);
 
-    // Text content
+    // Scrollable content area
+    const scrollEl = document.createElement("div");
+    scrollEl.className = "tmrg-bubble-scroll";
+    bubble.appendChild(scrollEl);
+    this.scrollEl = scrollEl;
+
+    // Text content (inside scroll area)
     const textEl = document.createElement("p");
     textEl.className = "tmrg-bubble-text";
-    bubble.appendChild(textEl);
+    scrollEl.appendChild(textEl);
     this.textEl = textEl;
 
-    // Typing indicator (shown while AI loading)
+    // Typing indicator (shown while AI loading, inside scroll area)
     const typingEl = document.createElement("div");
     typingEl.className = "tmrg-typing";
     typingEl.innerHTML = "<span></span><span></span><span></span>";
     typingEl.style.display = "none";
-    bubble.appendChild(typingEl);
+    scrollEl.appendChild(typingEl);
     this.typingEl = typingEl;
 
-    // Follow-up chips
+    // Follow-up chips (outside scroll, always visible at bottom)
     const followupsEl = document.createElement("div");
     followupsEl.className = "tmrg-followups";
     bubble.appendChild(followupsEl);
     this.followupsEl = followupsEl;
 
-    // Q&A input row (hidden by default)
+    // Q&A input row (outside scroll, always visible at bottom)
     const inputRow = document.createElement("div");
     inputRow.className = "tmrg-bubble-input-row";
     inputRow.style.display = "none";
@@ -96,24 +105,41 @@ export class BubbleManager {
     this.bubble = bubble;
   }
 
-  /** Position the bubble relative to character coords */
-  positionNear(charX: number, charY: number): void {
+  /**
+   * Register a callback invoked after the typewriter finishes.
+   * Use this to re-clamp the bubble position once its final height is known.
+   */
+  setRepositionFn(fn: () => void): void {
+    this.repositionFn = fn;
+  }
+
+  /**
+   * Position the bubble so its tail aligns near the character's mouth.
+   * charY is the character's top edge; mouthOffsetY is how far down the
+   * mouth sits within the character (default: ~42% from top — mouth y=30 of 72 viewBox).
+   */
+  positionNear(charX: number, charY: number, mouthOffsetY = CHAR_SIZE * 0.42): void {
     if (!this.bubble) return;
     const side = computeBubbleSide(charX, CHAR_SIZE, BUBBLE_WIDTH);
     this.bubble.setAttribute("data-side", side);
 
     const bh = this.bubble.offsetHeight;
     const vh = window.innerHeight;
+    const mouthY = charY + mouthOffsetY; // absolute Y of the mouth
 
     let left: number;
-    let top: number;
-
     if (side === "right") {
       left = charX + CHAR_SIZE + 12;
     } else {
       left = charX - BUBBLE_WIDTH - 12;
     }
-    top = charY + CHAR_SIZE / 2 - Math.min(bh / 2, 60);
+
+    // Align bubble so the tail (near bottom of bubble) points at the mouth.
+    // Tail is anchored at bottom: 18px from the bubble bottom edge.
+    const TAIL_BOTTOM_OFFSET = 18 + 7; // bottom CSS value + half tail height
+    let top = mouthY - (bh - TAIL_BOTTOM_OFFSET);
+
+    // Clamp within viewport
     top = Math.max(12, Math.min(vh - bh - 12, top));
 
     this.bubble.style.left = `${left}px`;
@@ -129,6 +155,10 @@ export class BubbleManager {
 
     this.typeText(message, () => {
       this.renderFollowUps(followUps);
+      // Re-clamp position now that we know the final height
+      this.repositionFn?.();
+      // Scroll to top so user reads from the beginning
+      if (this.scrollEl) this.scrollEl.scrollTop = 0;
     });
 
     this.bubble.classList.add("visible");
@@ -148,6 +178,10 @@ export class BubbleManager {
     this.typingEl!.style.display = "none";
     this.typeText(message, () => {
       this.renderFollowUps(followUps);
+      // Re-clamp position now that we know the final height
+      this.repositionFn?.();
+      // Scroll to top so user reads from the beginning
+      if (this.scrollEl) this.scrollEl.scrollTop = 0;
     });
   }
 
@@ -160,11 +194,13 @@ export class BubbleManager {
     this.clearTypewriter();
     this.bubble?.remove();
     this.bubble = null;
+    this.scrollEl = null;
     this.textEl = null;
     this.typingEl = null;
     this.followupsEl = null;
     this.inputRow = null;
     this.inputEl = null;
+    this.repositionFn = null;
   }
 
   // ─── private ───────────────────────────────────────────────────

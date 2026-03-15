@@ -574,6 +574,9 @@ const BUBBLE_CSS = `
   position: fixed;
   z-index: 2147483641;
   width: 260px;
+  max-height: min(380px, calc(100vh - 120px));
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
   border: 1.5px solid #e5e7eb;
   border-radius: 16px;
@@ -644,8 +647,22 @@ const BUBBLE_CSS = `
   padding: 2px 4px;
   border-radius: 4px;
   pointer-events: auto;
+  flex-shrink: 0;
 }
 .tmrg-bubble-dismiss:hover { color: #374151; background: #f3f4f6; }
+
+/* Scrollable text area */
+.tmrg-bubble-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  /* subtle scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+.tmrg-bubble-scroll::-webkit-scrollbar { width: 4px; }
+.tmrg-bubble-scroll::-webkit-scrollbar-track { background: transparent; }
+.tmrg-bubble-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
 
 /* Text */
 .tmrg-bubble-text {
@@ -689,6 +706,7 @@ const BUBBLE_CSS = `
   gap: 6px;
   margin-top: 10px;
   align-items: flex-end;
+  flex-shrink: 0;
 }
 .tmrg-bubble-input {
   flex: 1;
@@ -727,6 +745,7 @@ const BUBBLE_CSS = `
   flex-wrap: wrap;
   gap: 5px;
   margin-top: 8px;
+  flex-shrink: 0;
 }
 .tmrg-chip {
   font-size: 11.5px;
@@ -783,6 +802,7 @@ const CHAR_SIZE = 72;
 class BubbleManager {
   constructor() {
     this.bubble = null;
+    this.scrollEl = null;
     this.textEl = null;
     this.followupsEl = null;
     this.inputRow = null;
@@ -791,6 +811,7 @@ class BubbleManager {
     this.typeTimer = null;
     this.onAsk = null;
     this.onDismiss = null;
+    this.repositionFn = null;
   }
   init(root, onAsk, onDismiss) {
     injectCSS("tmrg-bubble-css", BUBBLE_CSS);
@@ -805,15 +826,19 @@ class BubbleManager {
     dismiss.title = "Dismiss";
     dismiss.addEventListener("click", () => onDismiss());
     bubble.appendChild(dismiss);
+    const scrollEl = document.createElement("div");
+    scrollEl.className = "tmrg-bubble-scroll";
+    bubble.appendChild(scrollEl);
+    this.scrollEl = scrollEl;
     const textEl = document.createElement("p");
     textEl.className = "tmrg-bubble-text";
-    bubble.appendChild(textEl);
+    scrollEl.appendChild(textEl);
     this.textEl = textEl;
     const typingEl = document.createElement("div");
     typingEl.className = "tmrg-typing";
     typingEl.innerHTML = "<span></span><span></span><span></span>";
     typingEl.style.display = "none";
-    bubble.appendChild(typingEl);
+    scrollEl.appendChild(typingEl);
     this.typingEl = typingEl;
     const followupsEl = document.createElement("div");
     followupsEl.className = "tmrg-followups";
@@ -850,21 +875,33 @@ class BubbleManager {
     root.appendChild(bubble);
     this.bubble = bubble;
   }
-  /** Position the bubble relative to character coords */
-  positionNear(charX, charY) {
+  /**
+   * Register a callback invoked after the typewriter finishes.
+   * Use this to re-clamp the bubble position once its final height is known.
+   */
+  setRepositionFn(fn) {
+    this.repositionFn = fn;
+  }
+  /**
+   * Position the bubble so its tail aligns near the character's mouth.
+   * charY is the character's top edge; mouthOffsetY is how far down the
+   * mouth sits within the character (default: ~42% from top — mouth y=30 of 72 viewBox).
+   */
+  positionNear(charX, charY, mouthOffsetY = CHAR_SIZE * 0.42) {
     if (!this.bubble) return;
     const side = computeBubbleSide(charX, CHAR_SIZE, BUBBLE_WIDTH);
     this.bubble.setAttribute("data-side", side);
     const bh = this.bubble.offsetHeight;
     const vh = window.innerHeight;
+    const mouthY = charY + mouthOffsetY;
     let left;
-    let top;
     if (side === "right") {
       left = charX + CHAR_SIZE + 12;
     } else {
       left = charX - BUBBLE_WIDTH - 12;
     }
-    top = charY + CHAR_SIZE / 2 - Math.min(bh / 2, 60);
+    const TAIL_BOTTOM_OFFSET = 18 + 7;
+    let top = mouthY - (bh - TAIL_BOTTOM_OFFSET);
     top = Math.max(12, Math.min(vh - bh - 12, top));
     this.bubble.style.left = `${left}px`;
     this.bubble.style.top = `${top}px`;
@@ -876,7 +913,10 @@ class BubbleManager {
     this.followupsEl.innerHTML = "";
     this.inputRow.style.display = showInput ? "flex" : "none";
     this.typeText(message, () => {
+      var _a;
       this.renderFollowUps(followUps);
+      (_a = this.repositionFn) == null ? void 0 : _a.call(this);
+      if (this.scrollEl) this.scrollEl.scrollTop = 0;
     });
     this.bubble.classList.add("visible");
   }
@@ -892,7 +932,10 @@ class BubbleManager {
     if (!this.bubble) return;
     this.typingEl.style.display = "none";
     this.typeText(message, () => {
+      var _a;
       this.renderFollowUps(followUps);
+      (_a = this.repositionFn) == null ? void 0 : _a.call(this);
+      if (this.scrollEl) this.scrollEl.scrollTop = 0;
     });
   }
   hide() {
@@ -905,11 +948,13 @@ class BubbleManager {
     this.clearTypewriter();
     (_a = this.bubble) == null ? void 0 : _a.remove();
     this.bubble = null;
+    this.scrollEl = null;
     this.textEl = null;
     this.typingEl = null;
     this.followupsEl = null;
     this.inputRow = null;
     this.inputEl = null;
+    this.repositionFn = null;
   }
   // ─── private ───────────────────────────────────────────────────
   typeText(text, onDone) {
@@ -1135,6 +1180,7 @@ class TMRGuideSDK {
       (text) => this.ask(text),
       () => this.hide()
     );
+    this.bubble.setRepositionFn(() => this.bubble.positionNear(this.charX, this.charY));
     this.ai = new AIManager(config.apiEndpoint, config.userId, config.emailId);
     this.tourMgr = new TourManager();
     this.renderToggleBtn();

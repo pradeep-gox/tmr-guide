@@ -82,6 +82,8 @@ class TMRGuideSDK {
       (text) => this.ask(text),
       () => this.hide(),
     );
+    // Re-clamp position after typewriter so long AI responses never overflow
+    this.bubble.setRepositionFn(() => this.bubble!.positionNear(this.charX, this.charY));
 
     this.ai = new AIManager(config.apiEndpoint, config.userId, config.emailId);
     this.tourMgr = new TourManager();
