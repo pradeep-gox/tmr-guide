@@ -141,7 +141,13 @@ class TMRGuideSDK {
       this.character!.setState("talking");
 
       if (options.target) {
-        this.spotlight!.show(options.target, primaryColor);
+        const hl = this.config!.highlight ?? {};
+        this.spotlight!.show(options.target, {
+          mode: hl.mode ?? "persistent",
+          color: hl.color ?? primaryColor,
+          ringWidth: hl.ringWidth ?? 3,
+          fadeDuration: hl.fadeDuration ?? 4000,
+        });
       }
 
       this.bubble!.show(options.message, options.showInput ?? false);
@@ -456,4 +462,5 @@ export type {
   CharacterRenderer,
   IdlePosition,
   ToggleStyle,
+  HighlightMode,
 } from "./types";

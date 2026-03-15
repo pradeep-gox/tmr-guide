@@ -11,6 +11,9 @@ export const CHARACTER_CSS = `
 
 .tmrg-char {
   position: fixed;
+  /* Above the spotlight overlay (2147483638) and ring (2147483639) so the
+     character is always fully visible even when the overlay is active */
+  z-index: 2147483640;
   pointer-events: auto;
   cursor: pointer;
   transition: left 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),

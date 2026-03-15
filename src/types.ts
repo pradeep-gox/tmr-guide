@@ -24,6 +24,16 @@ export type IdlePosition = "top-left" | "top-right" | "bottom-left" | "bottom-ri
  */
 export type ToggleStyle = "below" | "hover" | "badge" | "corner-chip" | "context-menu";
 
+/**
+ * Controls how the spotlight highlight behaves when pointing at a target element.
+ *
+ * - "persistent"  — overlay + ring stay on until the step changes (default)
+ * - "timed"       — overlay + ring fade out after `highlight.fadeDuration` ms (default 4000)
+ * - "ring-only"   — no dark overlay, just the glowing ring around the target
+ * - "pulse"       — ring pulses 3× to draw attention then overlay + ring fade out
+ */
+export type HighlightMode = "persistent" | "timed" | "ring-only" | "pulse";
+
 export interface TMRGuideConfig {
   /** Endpoint to call for AI responses. e.g. '/api/onboarding/assist' */
   apiEndpoint: string;
@@ -41,6 +51,27 @@ export interface TMRGuideConfig {
   idlePositionOffsetY?: number;
   /** UI style for the enable/disable toggle. Default: 'hover' */
   toggleStyle?: ToggleStyle;
+  /** Spotlight / highlight ring configuration */
+  highlight?: {
+    /**
+     * How the highlight behaves. Default: 'persistent'.
+     * See HighlightMode for descriptions of each option.
+     */
+    mode?: HighlightMode;
+    /**
+     * Ring border color. Defaults to theme.primaryColor.
+     * Accepts any valid CSS color string.
+     */
+    color?: string;
+    /**
+     * Ring border width in pixels. Default: 3.
+     */
+    ringWidth?: number;
+    /**
+     * For 'timed' and 'pulse' modes: ms before the highlight fades out. Default: 4000.
+     */
+    fadeDuration?: number;
+  };
   onStepChange?: (stepId: string) => void;
   onAskQuestion?: (text: string) => void;
   onDismiss?: () => void;

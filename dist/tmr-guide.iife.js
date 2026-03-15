@@ -232,6 +232,9 @@ var TMRGuide = function(exports) {
 
 .tmrg-char {
   position: fixed;
+  /* Above the spotlight overlay (2147483638) and ring (2147483639) so the
+     character is always fully visible even when the overlay is active */
+  z-index: 2147483640;
   pointer-events: auto;
   cursor: pointer;
   transition: left 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -438,22 +441,46 @@ var TMRGuide = function(exports) {
   inset: 0;
   pointer-events: none;
   z-index: 2147483638;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.35s ease;
 }
 .tmrg-spotlight-svg {
   width: 100%; height: 100%;
 }
-/* The highlight ring around the target */
+
+/* ── Highlight ring ──────────────────────────────────────────────── */
 .tmrg-highlight-ring {
   position: fixed;
   border-radius: 10px;
-  box-shadow: 0 0 0 3px #ff6700, 0 0 0 6px rgba(255,103,0,0.25);
   pointer-events: none;
   z-index: 2147483639;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: left   0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              top    0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width  0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              height 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.35s ease;
   opacity: 0;
 }
 .tmrg-highlight-ring.visible { opacity: 1; }
+
+/* pulse mode — 3 pulses then fades */
+@keyframes tmrg-ring-pulse {
+  0%   { box-shadow: var(--tmrg-ring-shadow); transform: scale(1);    opacity: 1; }
+  15%  { box-shadow: var(--tmrg-ring-wide);   transform: scale(1.04); opacity: 1; }
+  30%  { box-shadow: var(--tmrg-ring-shadow); transform: scale(1);    opacity: 1; }
+  45%  { box-shadow: var(--tmrg-ring-wide);   transform: scale(1.04); opacity: 1; }
+  60%  { box-shadow: var(--tmrg-ring-shadow); transform: scale(1);    opacity: 1; }
+  75%  { box-shadow: var(--tmrg-ring-wide);   transform: scale(1.04); opacity: 1; }
+  90%  { box-shadow: var(--tmrg-ring-shadow); transform: scale(1);    opacity: 1; }
+  100% { box-shadow: var(--tmrg-ring-shadow); transform: scale(1);    opacity: 0; }
+}
+.tmrg-highlight-ring.tmrg-pulse {
+  animation: tmrg-ring-pulse 2.1s ease-in-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tmrg-highlight-ring { transition: opacity 0.15s ease !important; }
+  .tmrg-highlight-ring.tmrg-pulse { animation: none !important; opacity: 1; }
+}
 `;
   const PAD = 8;
   class SpotlightManager {
@@ -465,6 +492,7 @@ var TMRGuide = function(exports) {
       this.resizeObs = null;
       this.scrollHandler = null;
       this.currentTarget = null;
+      this.fadeTimer = null;
     }
     init(root) {
       injectCSS("tmrg-spotlight-css", SPOTLIGHT_CSS);
@@ -509,23 +537,60 @@ var TMRGuide = function(exports) {
       root.appendChild(ring);
       this.ring = ring;
     }
-    show(targetSelector, primaryColor = "#ff6700") {
+    show(targetSelector, opts = {}) {
+      this.clearFadeTimer();
       this.currentTarget = targetSelector;
-      this.ring.style.boxShadow = `0 0 0 3px ${primaryColor}, 0 0 0 6px ${primaryColor}40`;
+      const mode = opts.mode ?? "persistent";
+      const color = opts.color ?? "#ff6700";
+      const width = opts.ringWidth ?? 3;
+      const fadeDuration = opts.fadeDuration ?? 4e3;
+      const glowHex = Math.round(0.25 * 255).toString(16).padStart(2, "0");
+      const shadow = `0 0 0 ${width}px ${color}, 0 0 0 ${width * 2}px ${color}${glowHex}`;
+      const shadowWide = `0 0 0 ${width + 2}px ${color}, 0 0 0 ${(width + 2) * 2}px ${color}${glowHex}`;
+      this.ring.style.setProperty("--tmrg-ring-shadow", shadow);
+      this.ring.style.setProperty("--tmrg-ring-wide", shadowWide);
+      this.ring.style.boxShadow = shadow;
+      this.ring.classList.remove("tmrg-pulse");
+      void this.ring.offsetWidth;
       this.updatePosition();
-      this.overlay.style.opacity = "1";
-      this.ring.classList.add("visible");
-      this.startTracking();
+      switch (mode) {
+        case "ring-only":
+          this.overlay.style.opacity = "0";
+          this.ring.classList.add("visible");
+          break;
+        case "timed":
+          this.overlay.style.opacity = "1";
+          this.ring.classList.add("visible");
+          this.fadeTimer = setTimeout(() => this.fadeOut(), fadeDuration);
+          break;
+        case "pulse":
+          this.overlay.style.opacity = "1";
+          this.ring.classList.add("visible", "tmrg-pulse");
+          this.fadeTimer = setTimeout(() => {
+            if (this.overlay) this.overlay.style.opacity = "0";
+          }, 2100);
+          this.ring.addEventListener("animationend", () => this.stopTracking(), { once: true });
+          break;
+        case "persistent":
+        default:
+          this.overlay.style.opacity = "1";
+          this.ring.classList.add("visible");
+          break;
+      }
+      if (mode !== "pulse") this.startTracking();
+      else this.startTracking();
     }
     hide() {
+      this.clearFadeTimer();
       this.currentTarget = null;
       this.overlay.style.opacity = "0";
-      this.ring.classList.remove("visible");
+      this.ring.classList.remove("visible", "tmrg-pulse");
       this.stopTracking();
       this.setHoleRect(-999, -999, 0, 0);
     }
     destroy() {
       var _a, _b;
+      this.clearFadeTimer();
       this.stopTracking();
       (_a = this.overlay) == null ? void 0 : _a.remove();
       (_b = this.ring) == null ? void 0 : _b.remove();
@@ -533,6 +598,17 @@ var TMRGuide = function(exports) {
       this.ring = null;
     }
     // ─── private ───────────────────────────────────────────────────
+    fadeOut() {
+      if (this.overlay) this.overlay.style.opacity = "0";
+      if (this.ring) this.ring.classList.remove("visible", "tmrg-pulse");
+      this.stopTracking();
+    }
+    clearFadeTimer() {
+      if (this.fadeTimer) {
+        clearTimeout(this.fadeTimer);
+        this.fadeTimer = null;
+      }
+    }
     updatePosition() {
       if (!this.currentTarget) return;
       const el = document.querySelector(this.currentTarget);
@@ -1220,7 +1296,13 @@ var TMRGuide = function(exports) {
       setTimeout(() => {
         this.character.setState("talking");
         if (options.target) {
-          this.spotlight.show(options.target, primaryColor);
+          const hl = this.config.highlight ?? {};
+          this.spotlight.show(options.target, {
+            mode: hl.mode ?? "persistent",
+            color: hl.color ?? primaryColor,
+            ringWidth: hl.ringWidth ?? 3,
+            fadeDuration: hl.fadeDuration ?? 4e3
+          });
         }
         this.bubble.show(options.message, options.showInput ?? false);
         requestAnimationFrame(() => {

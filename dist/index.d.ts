@@ -46,4 +46,4 @@ declare class TMRGuideSDK {
     private assertInit;
 }
 export declare const TMRGuide: TMRGuideSDK;
-export type { TMRGuideConfig, ShowOptions, TourStep, CharacterRenderer, IdlePosition, ToggleStyle, } from "./types";
+export type { TMRGuideConfig, ShowOptions, TourStep, CharacterRenderer, IdlePosition, ToggleStyle, HighlightMode, } from "./types";

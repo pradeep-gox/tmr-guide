@@ -1,4 +1,5 @@
 import { injectCSS } from "../utils/dom";
+import type { HighlightMode } from "../types";
 
 const SPOTLIGHT_CSS = `
 .tmrg-spotlight {
@@ -6,34 +7,66 @@ const SPOTLIGHT_CSS = `
   inset: 0;
   pointer-events: none;
   z-index: 2147483638;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.35s ease;
 }
 .tmrg-spotlight-svg {
   width: 100%; height: 100%;
 }
-/* The highlight ring around the target */
+
+/* ── Highlight ring ──────────────────────────────────────────────── */
 .tmrg-highlight-ring {
   position: fixed;
   border-radius: 10px;
-  box-shadow: 0 0 0 3px #ff6700, 0 0 0 6px rgba(255,103,0,0.25);
   pointer-events: none;
   z-index: 2147483639;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: left   0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              top    0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width  0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              height 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.35s ease;
   opacity: 0;
 }
 .tmrg-highlight-ring.visible { opacity: 1; }
+
+/* pulse mode — 3 pulses then fades */
+@keyframes tmrg-ring-pulse {
+  0%   { box-shadow: var(--tmrg-ring-shadow); transform: scale(1);    opacity: 1; }
+  15%  { box-shadow: var(--tmrg-ring-wide);   transform: scale(1.04); opacity: 1; }
+  30%  { box-shadow: var(--tmrg-ring-shadow); transform: scale(1);    opacity: 1; }
+  45%  { box-shadow: var(--tmrg-ring-wide);   transform: scale(1.04); opacity: 1; }
+  60%  { box-shadow: var(--tmrg-ring-shadow); transform: scale(1);    opacity: 1; }
+  75%  { box-shadow: var(--tmrg-ring-wide);   transform: scale(1.04); opacity: 1; }
+  90%  { box-shadow: var(--tmrg-ring-shadow); transform: scale(1);    opacity: 1; }
+  100% { box-shadow: var(--tmrg-ring-shadow); transform: scale(1);    opacity: 0; }
+}
+.tmrg-highlight-ring.tmrg-pulse {
+  animation: tmrg-ring-pulse 2.1s ease-in-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tmrg-highlight-ring { transition: opacity 0.15s ease !important; }
+  .tmrg-highlight-ring.tmrg-pulse { animation: none !important; opacity: 1; }
+}
 `;
 
 const PAD = 8; // padding around target rect
+
+export interface SpotlightOptions {
+  mode?: HighlightMode;
+  color?: string;
+  ringWidth?: number;
+  fadeDuration?: number;
+}
 
 export class SpotlightManager {
   private overlay: HTMLElement | null = null;
   private ring: HTMLElement | null = null;
   private svg: SVGSVGElement | null = null;
-  private mask: SVGRectElement | null = null; // the cutout rect
+  private mask: SVGRectElement | null = null;
   private resizeObs: ResizeObserver | null = null;
   private scrollHandler: (() => void) | null = null;
   private currentTarget: string | null = null;
+  private fadeTimer: ReturnType<typeof setTimeout> | null = null;
 
   init(root: HTMLElement): void {
     injectCSS("tmrg-spotlight-css", SPOTLIGHT_CSS);
@@ -48,19 +81,16 @@ export class SpotlightManager {
     svg.setAttribute("xmlns", svgNS);
     svg.setAttribute("class", "tmrg-spotlight-svg");
 
-    // defs with mask
     const defs = document.createElementNS(svgNS, "defs");
     const maskEl = document.createElementNS(svgNS, "mask");
     maskEl.setAttribute("id", "tmrg-mask");
 
-    // White rect = visible dark overlay everywhere
     const white = document.createElementNS(svgNS, "rect");
     white.setAttribute("x", "0"); white.setAttribute("y", "0");
     white.setAttribute("width", "100%"); white.setAttribute("height", "100%");
     white.setAttribute("fill", "white");
     maskEl.appendChild(white);
 
-    // Black rect = the "hole" (transparent area)
     const hole = document.createElementNS(svgNS, "rect");
     hole.setAttribute("fill", "black");
     hole.setAttribute("rx", "10");
@@ -70,7 +100,6 @@ export class SpotlightManager {
     defs.appendChild(maskEl);
     svg.appendChild(defs);
 
-    // The dark rectangle that uses the mask
     const dark = document.createElementNS(svgNS, "rect");
     dark.setAttribute("x", "0"); dark.setAttribute("y", "0");
     dark.setAttribute("width", "100%"); dark.setAttribute("height", "100%");
@@ -83,32 +112,83 @@ export class SpotlightManager {
     this.overlay = overlay;
     this.svg = svg;
 
-    // Highlight ring (separate element, gives the orange glow)
+    // Highlight ring (separate element, gives the colored glow)
     const ring = document.createElement("div");
     ring.className = "tmrg-highlight-ring";
     root.appendChild(ring);
     this.ring = ring;
   }
 
-  show(targetSelector: string, primaryColor = "#ff6700"): void {
+  show(targetSelector: string, opts: SpotlightOptions = {}): void {
+    this.clearFadeTimer();
     this.currentTarget = targetSelector;
-    this.ring!.style.boxShadow = `0 0 0 3px ${primaryColor}, 0 0 0 6px ${primaryColor}40`;
+
+    const mode: HighlightMode = opts.mode ?? "persistent";
+    const color = opts.color ?? "#ff6700";
+    const width = opts.ringWidth ?? 3;
+    const fadeDuration = opts.fadeDuration ?? 4000;
+
+    // Build box-shadow strings for normal + wide (pulse expanded) state
+    const glowHex = Math.round(0.25 * 255).toString(16).padStart(2, "0");
+    const shadow = `0 0 0 ${width}px ${color}, 0 0 0 ${width * 2}px ${color}${glowHex}`;
+    const shadowWide = `0 0 0 ${width + 2}px ${color}, 0 0 0 ${(width + 2) * 2}px ${color}${glowHex}`;
+
+    this.ring!.style.setProperty("--tmrg-ring-shadow", shadow);
+    this.ring!.style.setProperty("--tmrg-ring-wide", shadowWide);
+    this.ring!.style.boxShadow = shadow;
+
+    // Reset pulse class (force reflow to restart animation if re-triggered)
+    this.ring!.classList.remove("tmrg-pulse");
+    void this.ring!.offsetWidth;
+
     this.updatePosition();
-    this.overlay!.style.opacity = "1";
-    this.ring!.classList.add("visible");
-    this.startTracking();
+
+    switch (mode) {
+      case "ring-only":
+        // No overlay dim — ring only
+        this.overlay!.style.opacity = "0";
+        this.ring!.classList.add("visible");
+        break;
+
+      case "timed":
+        this.overlay!.style.opacity = "1";
+        this.ring!.classList.add("visible");
+        this.fadeTimer = setTimeout(() => this.fadeOut(), fadeDuration);
+        break;
+
+      case "pulse":
+        this.overlay!.style.opacity = "1";
+        this.ring!.classList.add("visible", "tmrg-pulse");
+        // After 2.1s animation + 0.35s fade delay = overlay hides ~same time
+        this.fadeTimer = setTimeout(() => {
+          if (this.overlay) this.overlay.style.opacity = "0";
+        }, 2100);
+        // Ring fades via animation fill-mode; stop tracking after it's done
+        this.ring!.addEventListener("animationend", () => this.stopTracking(), { once: true });
+        break;
+
+      case "persistent":
+      default:
+        this.overlay!.style.opacity = "1";
+        this.ring!.classList.add("visible");
+        break;
+    }
+
+    if (mode !== "pulse") this.startTracking();
+    else this.startTracking(); // track during pulse too (target may scroll)
   }
 
   hide(): void {
+    this.clearFadeTimer();
     this.currentTarget = null;
     this.overlay!.style.opacity = "0";
-    this.ring!.classList.remove("visible");
+    this.ring!.classList.remove("visible", "tmrg-pulse");
     this.stopTracking();
-    // Move hole off screen
     this.setHoleRect(-999, -999, 0, 0);
   }
 
   destroy(): void {
+    this.clearFadeTimer();
     this.stopTracking();
     this.overlay?.remove();
     this.ring?.remove();
@@ -117,6 +197,19 @@ export class SpotlightManager {
   }
 
   // ─── private ───────────────────────────────────────────────────
+
+  private fadeOut(): void {
+    if (this.overlay) this.overlay.style.opacity = "0";
+    if (this.ring) this.ring.classList.remove("visible", "tmrg-pulse");
+    this.stopTracking();
+  }
+
+  private clearFadeTimer(): void {
+    if (this.fadeTimer) {
+      clearTimeout(this.fadeTimer);
+      this.fadeTimer = null;
+    }
+  }
 
   private updatePosition(): void {
     if (!this.currentTarget) return;
