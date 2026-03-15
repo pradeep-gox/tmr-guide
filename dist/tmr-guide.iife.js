@@ -975,9 +975,10 @@ var TMRGuide = function(exports) {
   }
   const FALLBACK_MSG = "I'm having trouble connecting right now. You can reach our support team via the chat bubble in the corner.";
   class AIManager {
-    constructor(apiEndpoint, userId) {
+    constructor(apiEndpoint, userId, emailId) {
       this.apiEndpoint = apiEndpoint;
       this.userId = userId;
+      this.emailId = emailId;
       this.history = [];
       this.sessionId = crypto.randomUUID();
     }
@@ -991,6 +992,7 @@ var TMRGuide = function(exports) {
       const body = {
         sessionId: this.sessionId,
         userId: this.userId ?? null,
+        emailId: this.emailId ?? null,
         message,
         history,
         subscriptionContext: typeof context.subscriptionContext === "string" ? context.subscriptionContext : void 0
@@ -1135,7 +1137,7 @@ var TMRGuide = function(exports) {
         (text) => this.ask(text),
         () => this.hide()
       );
-      this.ai = new AIManager(config.apiEndpoint, config.userId);
+      this.ai = new AIManager(config.apiEndpoint, config.userId, config.emailId);
       this.tourMgr = new TourManager();
       this.renderToggleBtn();
       charContainer.addEventListener("click", () => {

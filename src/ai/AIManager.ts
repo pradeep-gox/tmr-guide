@@ -10,6 +10,7 @@ export class AIManager {
   constructor(
     private readonly apiEndpoint: string,
     private readonly userId?: string,
+    private readonly emailId?: string,
   ) {
     this.sessionId = crypto.randomUUID();
   }
@@ -28,6 +29,7 @@ export class AIManager {
     const body = {
       sessionId: this.sessionId,
       userId: this.userId ?? null,
+      emailId: this.emailId ?? null,
       message,
       history,
       subscriptionContext:

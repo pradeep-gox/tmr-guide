@@ -83,7 +83,7 @@ class TMRGuideSDK {
       () => this.hide(),
     );
 
-    this.ai = new AIManager(config.apiEndpoint, config.userId);
+    this.ai = new AIManager(config.apiEndpoint, config.userId, config.emailId);
     this.tourMgr = new TourManager();
 
     // Toggle button (enable/disable guide)

@@ -2,9 +2,10 @@ import type { AIResponse } from "../types";
 export declare class AIManager {
     private readonly apiEndpoint;
     private readonly userId?;
+    private readonly emailId?;
     private sessionId;
     private history;
-    constructor(apiEndpoint: string, userId?: string | undefined);
+    constructor(apiEndpoint: string, userId?: string | undefined, emailId?: string | undefined);
     /**
      * Ask Maya a question.
      * `context` should contain a `subscriptionContext` string key built by the

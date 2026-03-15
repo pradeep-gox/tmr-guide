@@ -28,6 +28,7 @@ export interface TMRGuideConfig {
   /** Endpoint to call for AI responses. e.g. '/api/onboarding/assist' */
   apiEndpoint: string;
   userId?: string;
+  emailId?: string;
   theme?: {
     primaryColor?: string;
     characterSize?: number;
