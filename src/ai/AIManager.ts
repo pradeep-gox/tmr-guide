@@ -1,4 +1,4 @@
-import type { AIRequest, AIResponse } from "../types";
+import type { AIResponse } from "../types";
 
 const FALLBACK_MSG =
   "I'm having trouble connecting right now. You can reach our support team via the chat bubble in the corner.";
@@ -14,24 +14,26 @@ export class AIManager {
     this.sessionId = crypto.randomUUID();
   }
 
+  /**
+   * Ask Maya a question.
+   * `context` should contain a `subscriptionContext` string key built by the
+   * host application (e.g. buildSystemContext() in tmr_platform).
+   */
   async ask(
-    question: string,
+    message: string,
     context: Record<string, unknown>,
-    trigger: AIRequest["trigger"] = "user_question",
   ): Promise<AIResponse> {
-    // Keep last 6 exchanges (12 messages)
     const history = this.history.slice(-12);
 
-    // sessionId and userId go inside context — matches the format Maya expects
-    const body: AIRequest = {
-      question,
-      trigger,
-      context: {
-        ...context,
-        sessionId: this.sessionId,
-        userId: this.userId ?? "",
-      },
+    const body = {
+      sessionId: this.sessionId,
+      userId: this.userId ?? null,
+      message,
       history,
+      subscriptionContext:
+        typeof context.subscriptionContext === "string"
+          ? context.subscriptionContext
+          : undefined,
     };
 
     try {
@@ -42,24 +44,18 @@ export class AIManager {
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: AIResponse = await res.json();
+      const data = await res.json();
 
-      // Record in history
-      this.history.push({ role: "user", content: question });
-      this.history.push({ role: "assistant", content: data.message });
+      // Maya returns { response: string }
+      const replyText: string = data.response ?? data.message ?? "";
 
-      return data;
+      this.history.push({ role: "user", content: message });
+      this.history.push({ role: "assistant", content: replyText });
+
+      return { message: replyText };
     } catch {
       return { message: FALLBACK_MSG };
     }
-  }
-
-  /** Trigger an idle or error prompt (no user text) */
-  async prompt(
-    trigger: "idle" | "error",
-    context: Record<string, unknown>,
-  ): Promise<AIResponse> {
-    return this.ask("", context, trigger);
   }
 
   resetSession(): void {

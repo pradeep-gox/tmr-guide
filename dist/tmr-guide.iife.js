@@ -981,17 +981,19 @@ var TMRGuide = function(exports) {
       this.history = [];
       this.sessionId = crypto.randomUUID();
     }
-    async ask(question, context, trigger = "user_question") {
+    /**
+     * Ask Maya a question.
+     * `context` should contain a `subscriptionContext` string key built by the
+     * host application (e.g. buildSystemContext() in tmr_platform).
+     */
+    async ask(message, context) {
       const history = this.history.slice(-12);
       const body = {
-        question,
-        trigger,
-        context: {
-          ...context,
-          sessionId: this.sessionId,
-          userId: this.userId ?? ""
-        },
-        history
+        sessionId: this.sessionId,
+        userId: this.userId ?? null,
+        message,
+        history,
+        subscriptionContext: typeof context.subscriptionContext === "string" ? context.subscriptionContext : void 0
       };
       try {
         const res = await fetch(this.apiEndpoint, {
@@ -1001,16 +1003,13 @@ var TMRGuide = function(exports) {
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        this.history.push({ role: "user", content: question });
-        this.history.push({ role: "assistant", content: data.message });
-        return data;
+        const replyText = data.response ?? data.message ?? "";
+        this.history.push({ role: "user", content: message });
+        this.history.push({ role: "assistant", content: replyText });
+        return { message: replyText };
       } catch {
         return { message: FALLBACK_MSG };
       }
-    }
-    /** Trigger an idle or error prompt (no user text) */
-    async prompt(trigger, context) {
-      return this.ask("", context, trigger);
     }
     resetSession() {
       this.sessionId = crypto.randomUUID();
