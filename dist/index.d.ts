@@ -16,6 +16,7 @@ declare class TMRGuideSDK {
     private enabled;
     private toggleBtn;
     private contextMenu;
+    private resizeHandler;
     private readonly STORAGE_KEY;
     init(config: TMRGuideConfig): void;
     show(options: ShowOptions): void;
@@ -35,6 +36,7 @@ declare class TMRGuideSDK {
     /** Replace the default bot character with a custom renderer */
     setCharacter(renderer: CharacterRenderer): void;
     destroy(): void;
+    private handleResize;
     private applyCharPosition;
     private cornerPosition;
     private moveToCorner;

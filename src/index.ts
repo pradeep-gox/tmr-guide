@@ -32,6 +32,7 @@ class TMRGuideSDK {
   private enabled = true;
   private toggleBtn: HTMLElement | null = null;
   private contextMenu: HTMLElement | null = null;
+  private resizeHandler: (() => void) | null = null;
   private readonly STORAGE_KEY = "tmr-guide-enabled";
 
   // ─── Public API ─────────────────────────────────────────────────
@@ -100,6 +101,10 @@ class TMRGuideSDK {
         this.show(this.currentOptions);
       }
     });
+
+    // Reposition character + bubble when the viewport is resized
+    this.resizeHandler = () => this.handleResize();
+    window.addEventListener("resize", this.resizeHandler, { passive: true });
   }
 
   show(options: ShowOptions): void {
@@ -115,13 +120,11 @@ class TMRGuideSDK {
 
     const primaryColor = this.config!.theme?.primaryColor ?? "#ff6700";
 
-    // 1. Walk character toward target
+    // 1. Walk character toward target (or idle corner when no target)
     const rect = options.target ? getRect(options.target) : null;
-    const targetPos = computeCharacterPosition(
-      rect,
-      options.position ?? "right",
-      this.charSize,
-    );
+    const targetPos = rect
+      ? computeCharacterPosition(rect, options.position ?? "right", this.charSize)
+      : this.cornerPosition();
 
     const isAlreadyNear =
       Math.abs(this.charX - targetPos.x) < 4 &&
@@ -253,6 +256,10 @@ class TMRGuideSDK {
   }
 
   destroy(): void {
+    if (this.resizeHandler) {
+      window.removeEventListener("resize", this.resizeHandler);
+      this.resizeHandler = null;
+    }
     this.spotlight?.destroy();
     this.bubble?.destroy();
     this.tourMgr?.destroy();
@@ -273,6 +280,27 @@ class TMRGuideSDK {
   }
 
   // ─── Private ────────────────────────────────────────────────────
+
+  private handleResize(): void {
+    // Recompute character position based on current options (or idle corner)
+    const opts = this.currentOptions;
+    const rect = opts?.target ? getRect(opts.target) : null;
+    const newPos = rect
+      ? computeCharacterPosition(rect, opts?.position ?? "right", this.charSize)
+      : this.cornerPosition();
+
+    this.charX = newPos.x;
+    this.charY = newPos.y;
+    this.applyCharPosition();
+
+    // Re-clamp bubble if it's visible
+    if (this.isVisible) {
+      this.bubble?.positionNear(this.charX, this.charY);
+    }
+
+    // Reposition corner chip toggle if in use
+    this.positionCornerChip();
+  }
 
   private applyCharPosition(): void {
     if (!this.charContainer) return;

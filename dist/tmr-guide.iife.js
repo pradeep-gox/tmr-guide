@@ -1222,6 +1222,7 @@ var TMRGuide = function(exports) {
       this.enabled = true;
       this.toggleBtn = null;
       this.contextMenu = null;
+      this.resizeHandler = null;
       this.STORAGE_KEY = "tmr-guide-enabled";
     }
     // ─── Public API ─────────────────────────────────────────────────
@@ -1270,6 +1271,8 @@ var TMRGuide = function(exports) {
           this.show(this.currentOptions);
         }
       });
+      this.resizeHandler = () => this.handleResize();
+      window.addEventListener("resize", this.resizeHandler, { passive: true });
     }
     show(options) {
       var _a, _b, _c;
@@ -1280,11 +1283,7 @@ var TMRGuide = function(exports) {
       this.isVisible = true;
       const primaryColor = ((_c = this.config.theme) == null ? void 0 : _c.primaryColor) ?? "#ff6700";
       const rect = options.target ? getRect(options.target) : null;
-      const targetPos = computeCharacterPosition(
-        rect,
-        options.position ?? "right",
-        this.charSize
-      );
+      const targetPos = rect ? computeCharacterPosition(rect, options.position ?? "right", this.charSize) : this.cornerPosition();
       const isAlreadyNear = Math.abs(this.charX - targetPos.x) < 4 && Math.abs(this.charY - targetPos.y) < 4;
       if (!isAlreadyNear) {
         this.character.setState("walking");
@@ -1394,6 +1393,10 @@ var TMRGuide = function(exports) {
     }
     destroy() {
       var _a, _b, _c, _d, _e;
+      if (this.resizeHandler) {
+        window.removeEventListener("resize", this.resizeHandler);
+        this.resizeHandler = null;
+      }
       (_a = this.spotlight) == null ? void 0 : _a.destroy();
       (_b = this.bubble) == null ? void 0 : _b.destroy();
       (_c = this.tourMgr) == null ? void 0 : _c.destroy();
@@ -1413,6 +1416,19 @@ var TMRGuide = function(exports) {
       this.isVisible = false;
     }
     // ─── Private ────────────────────────────────────────────────────
+    handleResize() {
+      var _a;
+      const opts = this.currentOptions;
+      const rect = (opts == null ? void 0 : opts.target) ? getRect(opts.target) : null;
+      const newPos = rect ? computeCharacterPosition(rect, (opts == null ? void 0 : opts.position) ?? "right", this.charSize) : this.cornerPosition();
+      this.charX = newPos.x;
+      this.charY = newPos.y;
+      this.applyCharPosition();
+      if (this.isVisible) {
+        (_a = this.bubble) == null ? void 0 : _a.positionNear(this.charX, this.charY);
+      }
+      this.positionCornerChip();
+    }
     applyCharPosition() {
       if (!this.charContainer) return;
       this.charContainer.style.left = `${this.charX}px`;
