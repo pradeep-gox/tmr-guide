@@ -34,6 +34,7 @@ class TMRGuideSDK {
   private contextMenu: HTMLElement | null = null;
   private resizeHandler: (() => void) | null = null;
   private resizeDebounce: ReturnType<typeof setTimeout> | null = null;
+  private clickOutsideHandler: ((e: MouseEvent) => void) | null = null;
   private readonly STORAGE_KEY = "tmr-guide-enabled";
 
   // ─── Public API ─────────────────────────────────────────────────
@@ -172,6 +173,8 @@ class TMRGuideSDK {
         // Settle to idle after speaking
         setTimeout(() => this.character!.setState("idle"), 1800);
       });
+      // Dismiss bubble when user clicks outside the guide root
+      this.attachClickOutside();
     }, delay);
   }
 
@@ -182,6 +185,7 @@ class TMRGuideSDK {
     this.bubble!.hide();
     this.bubble!.setOnNext(null);
     this.character!.setState("idle");
+    this.detachClickOutside();
     this.config?.onDismiss?.();
   }
 
@@ -262,6 +266,7 @@ class TMRGuideSDK {
     this.spotlight!.hide();
     this.bubble!.hide();
     this.character!.setState("idle");
+    this.detachClickOutside();
     this.moveToCorner();
   }
 
@@ -279,6 +284,7 @@ class TMRGuideSDK {
       window.removeEventListener("resize", this.resizeHandler);
       this.resizeHandler = null;
     }
+    this.detachClickOutside();
     this.spotlight?.destroy();
     this.bubble?.destroy();
     this.tourMgr?.destroy();
@@ -491,6 +497,27 @@ class TMRGuideSDK {
       }
     };
     document.addEventListener("keydown", onEsc);
+  }
+
+  /** Attach a document click listener that hides the bubble when clicking outside the guide root. */
+  private attachClickOutside(): void {
+    this.detachClickOutside(); // clear any previous listener first
+    // Delay by one tick so the current click (e.g. character click) doesn't immediately dismiss
+    setTimeout(() => {
+      this.clickOutsideHandler = (e: MouseEvent) => {
+        if (!this.isVisible) return;
+        if (this.root && this.root.contains(e.target as Node)) return;
+        this.hide();
+      };
+      document.addEventListener("click", this.clickOutsideHandler, { passive: true });
+    }, 0);
+  }
+
+  private detachClickOutside(): void {
+    if (this.clickOutsideHandler) {
+      document.removeEventListener("click", this.clickOutsideHandler);
+      this.clickOutsideHandler = null;
+    }
   }
 
   private assertInit(): void {

@@ -18,6 +18,7 @@ declare class TMRGuideSDK {
     private contextMenu;
     private resizeHandler;
     private resizeDebounce;
+    private clickOutsideHandler;
     private readonly STORAGE_KEY;
     init(config: TMRGuideConfig): void;
     show(options: ShowOptions): void;
@@ -46,6 +47,9 @@ declare class TMRGuideSDK {
     private positionCornerChip;
     private setupContextMenu;
     private showContextMenu;
+    /** Attach a document click listener that hides the bubble when clicking outside the guide root. */
+    private attachClickOutside;
+    private detachClickOutside;
     private assertInit;
 }
 export declare const TMRGuide: TMRGuideSDK;

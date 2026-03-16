@@ -1524,6 +1524,7 @@ var TMRGuide = function(exports) {
       this.contextMenu = null;
       this.resizeHandler = null;
       this.resizeDebounce = null;
+      this.clickOutsideHandler = null;
       this.STORAGE_KEY = "tmr-guide-enabled";
     }
     // ─── Public API ─────────────────────────────────────────────────
@@ -1620,6 +1621,7 @@ var TMRGuide = function(exports) {
           this.bubble.positionNear(this.charX, this.charY);
           setTimeout(() => this.character.setState("idle"), 1800);
         });
+        this.attachClickOutside();
       }, delay);
     }
     hide() {
@@ -1630,6 +1632,7 @@ var TMRGuide = function(exports) {
       this.bubble.hide();
       this.bubble.setOnNext(null);
       this.character.setState("idle");
+      this.detachClickOutside();
       (_b = (_a = this.config) == null ? void 0 : _a.onDismiss) == null ? void 0 : _b.call(_a);
     }
     /** Run a multi-step guided tour */
@@ -1699,6 +1702,7 @@ var TMRGuide = function(exports) {
       this.spotlight.hide();
       this.bubble.hide();
       this.character.setState("idle");
+      this.detachClickOutside();
       this.moveToCorner();
     }
     /** Replace the default bot character with a custom renderer */
@@ -1718,6 +1722,7 @@ var TMRGuide = function(exports) {
         window.removeEventListener("resize", this.resizeHandler);
         this.resizeHandler = null;
       }
+      this.detachClickOutside();
       (_a = this.spotlight) == null ? void 0 : _a.destroy();
       (_b = this.bubble) == null ? void 0 : _b.destroy();
       (_c = this.tourMgr) == null ? void 0 : _c.destroy();
@@ -1919,6 +1924,24 @@ var TMRGuide = function(exports) {
         }
       };
       document.addEventListener("keydown", onEsc);
+    }
+    /** Attach a document click listener that hides the bubble when clicking outside the guide root. */
+    attachClickOutside() {
+      this.detachClickOutside();
+      setTimeout(() => {
+        this.clickOutsideHandler = (e) => {
+          if (!this.isVisible) return;
+          if (this.root && this.root.contains(e.target)) return;
+          this.hide();
+        };
+        document.addEventListener("click", this.clickOutsideHandler, { passive: true });
+      }, 0);
+    }
+    detachClickOutside() {
+      if (this.clickOutsideHandler) {
+        document.removeEventListener("click", this.clickOutsideHandler);
+        this.clickOutsideHandler = null;
+      }
     }
     assertInit() {
       if (!this.root) throw new Error("TMRGuide: call init() first");
