@@ -154,7 +154,11 @@ TMRGuide.show({ target: '[data-guide-target="connect-btn"]', ... });
 
 ```ts
 // Celebrate a milestone — character jumps + sparkles, optional bubble message
+// No-op when the guide is disabled (bubble won't reappear if user turned it off)
 TMRGuide.celebrate(message?: string): void
+
+// Hide the bubble (character stays in place)
+TMRGuide.hide(): void
 
 // Enable guide programmatically (persists in localStorage)
 TMRGuide.enable(): void
@@ -227,6 +231,14 @@ After every AI response:
 - **Source citations** — if `sources[]` returned, rendered as a "Sources" list with links
 - **Feedback row** — 👍 / 👎 buttons; tapping either fires `onFeedback(rating, question)` and replaces the row with a short acknowledgement
 
+### Bubble positioning — open side
+
+The bubble always appears on the side of the character that faces **away from the spotlighted target** — so it never covers the element the user needs to interact with. If there is no room on the open side it falls back gracefully. When no target is active (corner idle) the bubble defaults to whichever side has more space.
+
+### Click-outside dismiss
+
+After every `show()`, `tour()`, or `celebrate()` call a document-level click listener is attached. Clicking anywhere **outside** the guide root (robot + bubble) hides the bubble. The click propagates normally so the underlying element (e.g. a CTA button) still receives it. The listener is removed automatically on `hide()`, `disable()`, and `destroy()`.
+
 ---
 
 ## Character States & Animations
@@ -284,57 +296,62 @@ TMRGuide.tour([
 
 ## React Integration
 
+The key challenge in React is preventing step-change effects from firing before `init()` completes. Use a **dual-lock pattern** — a `ref` for synchronous guards inside `setTimeout` callbacks and a `state` flag for effect dependency arrays:
+
 ```tsx
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TMRGuide } from "tmr-guide";
 
-interface Props { stepId: string }
+interface Props { stepId: string; userId: string | null }
 
-export function GuideController({ stepId }: Props) {
-  const initialised = useRef(false);
-  const secondsOnStep = useRef(0);
+export function GuideController({ stepId, userId }: Props) {
+  const initialised = useRef(false);        // synchronous guard (safe in setTimeout)
+  const [isInitialised, setIsInitialised] = useState(false); // dep-array guard
   const hasInteracted = useRef(false);
 
   // Init once — wait for userId so backend can rate-limit per user
   useEffect(() => {
-    if (initialised.current) return;
+    if (initialised.current || !userId) return;
     initialised.current = true;
     TMRGuide.init({
       apiEndpoint: "/api/assist",
+      userId,
       theme: { primaryColor: "#ff6700" },
       idlePosition: "bottom-left",
       highlight: { mode: "pulse" },
       onAskQuestion: () => { hasInteracted.current = true; },
     });
-    return () => { TMRGuide.destroy(); initialised.current = false; };
-  }, []);
+    setIsInitialised(true);
+    return () => {
+      TMRGuide.destroy();
+      initialised.current = false;
+      setIsInitialised(false);
+    };
+  }, [userId]);
 
-  // Track time on step
+  // Show on step change — only after init
   useEffect(() => {
-    secondsOnStep.current = 0;
-    const t = setInterval(() => { secondsOnStep.current += 1; }, 1000);
-    return () => clearInterval(t);
-  }, [stepId]);
-
-  // Show on step change
-  useEffect(() => {
+    if (!isInitialised) return;
     hasInteracted.current = false;
     const t = setTimeout(() => {
+      if (!initialised.current) return; // guard against late-firing after unmount
       TMRGuide.show({ stepId, message: `You're on: ${stepId}`, showInput: true });
     }, 400);
     return () => clearTimeout(t);
-  }, [stepId]);
+  }, [stepId, isInitialised]);
 
   // Proactive nudge after 65s of inactivity
   useEffect(() => {
+    if (!isInitialised) return;
     const t = setTimeout(() => {
+      if (!initialised.current) return;
       if (!hasInteracted.current) {
         TMRGuide.show({ stepId, message: "Still there? Feel free to ask me anything!" });
       }
     }, 65_000);
     return () => clearTimeout(t);
-  }, [stepId]);
+  }, [stepId, isInitialised]);
 
   return null;
 }
@@ -367,7 +384,7 @@ src/
                               Markdown: bold, italic, code, lists, links
                               showLoading() dots → showResponse() transition
                               Follow-up chips, source citations, thumbs feedback
-                              Smart left/right side keeps bubble in viewport
+                              Smart left/right side — bubble placed on open side away from target
                               max-height cap + scrollable inner area prevents overflow
     styles.ts               ← Bubble CSS (color-scheme:light, list/code styles, etc.)
 
@@ -393,9 +410,15 @@ src/
 
 **Bubble overflow prevention:** `max-height: min(380px, calc(100vh - 120px))` caps bubble height. A flex scrollable inner div (`tmrg-bubble-scroll`) prevents content from pushing outside. After the typewriter finishes, `repositionFn` is called to re-clamp the bubble within the viewport.
 
+**Open-side bubble:** `computeBubbleSide()` accepts `targetCenterX` — the center X of the spotlighted element. The bubble is placed on whichever side of the robot faces away from the target (open space). Falls back gracefully if there is no room.
+
 **Tail anchoring:** Bubble tail is anchored at `bottom: 18px`, and `positionNear()` computes `top` such that the tail aligns with the robot's mouth (≈42% from top of 72px SVG viewBox, i.e. y≈30).
 
+**Click-outside dismiss:** A `document` click listener attached after each `show()`/`tour()`/`celebrate()` hides the bubble when the user clicks outside the guide root. The click propagates so the underlying element still receives it. The listener is torn down on `hide()`, `disable()`, and `destroy()`.
+
 **Enable/disable persistence:** `localStorage("tmr-guide-enabled")` read in `init()` so state survives page reloads.
+
+**`celebrate()` guard:** No-op when `this.enabled === false` — prevents the bubble reappearing mid-step if the user has disabled the guide.
 
 **Resize debounce:** `handleResize()` is debounced 100ms to avoid excessive layout recomputation while the user drags a window edge.
 
