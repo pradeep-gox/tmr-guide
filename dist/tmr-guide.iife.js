@@ -1019,10 +1019,22 @@ var TMRGuide = function(exports) {
     y = Math.max(MARGIN, Math.min(vh - charSize - MARGIN, y));
     return { x, y };
   }
-  function computeBubbleSide(charX, charSize, bubbleWidth) {
+  function computeBubbleSide(charX, charSize, bubbleWidth, targetCenterX) {
     const vw = window.innerWidth;
-    if (charX + charSize + bubbleWidth + MARGIN > vw) return "left";
-    return "right";
+    const canFitRight = charX + charSize + bubbleWidth + MARGIN <= vw;
+    const canFitLeft = charX - bubbleWidth - MARGIN >= 0;
+    if (targetCenterX !== void 0) {
+      const robotCenterX = charX + charSize / 2;
+      if (robotCenterX < targetCenterX) {
+        if (canFitLeft) return "left";
+        if (canFitRight) return "right";
+      } else {
+        if (canFitRight) return "right";
+        if (canFitLeft) return "left";
+      }
+    }
+    if (canFitRight) return "right";
+    return "left";
   }
   const BUBBLE_WIDTH = 260;
   const TYPEWRITER_INTERVAL = 18;
@@ -1045,6 +1057,7 @@ var TMRGuide = function(exports) {
       this.onNext = null;
       this.navEl = null;
       this.repositionFn = null;
+      this.targetCenterX = void 0;
       this.lastQuestion = "";
     }
     init(root, onAsk, onDismiss, onFeedback) {
@@ -1136,6 +1149,10 @@ var TMRGuide = function(exports) {
     setRepositionFn(fn) {
       this.repositionFn = fn;
     }
+    /** Update the target element's center X so the bubble positions on the open side. */
+    setTargetCenterX(x) {
+      this.targetCenterX = x;
+    }
     /**
      * Set (or clear) the tour "Next →" button callback.
      * Pass a function to show the button; pass null to hide it.
@@ -1151,7 +1168,7 @@ var TMRGuide = function(exports) {
       if (!this.bubble) return;
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const side = computeBubbleSide(charX, CHAR_SIZE, BUBBLE_WIDTH);
+      const side = computeBubbleSide(charX, CHAR_SIZE, BUBBLE_WIDTH, this.targetCenterX);
       this.bubble.setAttribute("data-side", side);
       const bh = this.bubble.offsetHeight;
       const mouthY = charY + mouthOffsetY;
@@ -1604,6 +1621,7 @@ var TMRGuide = function(exports) {
       this.charX = targetPos.x;
       this.charY = targetPos.y;
       this.applyCharPosition();
+      this.bubble.setTargetCenterX(rect ? rect.left + rect.width / 2 : void 0);
       const delay = isAlreadyNear ? 0 : 500;
       setTimeout(() => {
         this.character.setState("talking");
@@ -1631,6 +1649,7 @@ var TMRGuide = function(exports) {
       this.spotlight.hide();
       this.bubble.hide();
       this.bubble.setOnNext(null);
+      this.bubble.setTargetCenterX(void 0);
       this.character.setState("idle");
       this.detachClickOutside();
       (_b = (_a = this.config) == null ? void 0 : _a.onDismiss) == null ? void 0 : _b.call(_a);

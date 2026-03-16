@@ -56,13 +56,36 @@ export function computeCharacterPosition(
 /**
  * Given the character's position, decide which side of it the bubble should
  * appear on — keeping the bubble within the viewport.
+ *
+ * When targetCenterX is provided (center of the spotlighted element), the bubble
+ * is placed on the side AWAY from the target (open space). Falls back to the
+ * opposite side only if there is not enough room.
  */
 export function computeBubbleSide(
   charX: number,
   charSize: number,
   bubbleWidth: number,
+  targetCenterX?: number,
 ): "right" | "left" {
   const vw = window.innerWidth;
-  if (charX + charSize + bubbleWidth + MARGIN > vw) return "left";
-  return "right";
+  const canFitRight = charX + charSize + bubbleWidth + MARGIN <= vw;
+  const canFitLeft = charX - bubbleWidth - MARGIN >= 0;
+
+  if (targetCenterX !== undefined) {
+    // Robot center vs target center — prefer the side facing open space
+    const robotCenterX = charX + charSize / 2;
+    if (robotCenterX < targetCenterX) {
+      // Robot is to the LEFT of the target → open space is on the left
+      if (canFitLeft) return "left";
+      if (canFitRight) return "right";
+    } else {
+      // Robot is to the RIGHT of the target → open space is on the right
+      if (canFitRight) return "right";
+      if (canFitLeft) return "left";
+    }
+  }
+
+  // No target info: default to right, fall back to left
+  if (canFitRight) return "right";
+  return "left";
 }

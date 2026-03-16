@@ -151,6 +151,9 @@ class TMRGuideSDK {
     this.charY = targetPos.y;
     this.applyCharPosition();
 
+    // Tell the bubble which side the target is on so it positions in open space
+    this.bubble!.setTargetCenterX(rect ? rect.left + rect.width / 2 : undefined);
+
     // 2. After walking transition, show bubble + spotlight
     const delay = isAlreadyNear ? 0 : 500;
     setTimeout(() => {
@@ -184,6 +187,7 @@ class TMRGuideSDK {
     this.spotlight!.hide();
     this.bubble!.hide();
     this.bubble!.setOnNext(null);
+    this.bubble!.setTargetCenterX(undefined);
     this.character!.setState("idle");
     this.detachClickOutside();
     this.config?.onDismiss?.();

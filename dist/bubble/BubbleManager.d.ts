@@ -19,10 +19,14 @@ export declare class BubbleManager {
     private navEl;
     /** Called after typewriter finishes so the host can re-clamp position */
     private repositionFn;
+    /** Center X of the current spotlighted target — used to place bubble on the open side */
+    private targetCenterX;
     /** Last user question — stored so feedback can report it */
     private lastQuestion;
     init(root: HTMLElement, onAsk: BubbleOnAsk, onDismiss: BubbleOnDismiss, onFeedback?: BubbleOnFeedback): void;
     setRepositionFn(fn: () => void): void;
+    /** Update the target element's center X so the bubble positions on the open side. */
+    setTargetCenterX(x: number | undefined): void;
     /**
      * Set (or clear) the tour "Next →" button callback.
      * Pass a function to show the button; pass null to hide it.

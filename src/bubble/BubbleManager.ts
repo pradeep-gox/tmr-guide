@@ -29,6 +29,8 @@ export class BubbleManager {
   private navEl: HTMLElement | null = null;
   /** Called after typewriter finishes so the host can re-clamp position */
   private repositionFn: (() => void) | null = null;
+  /** Center X of the current spotlighted target — used to place bubble on the open side */
+  private targetCenterX: number | undefined = undefined;
   /** Last user question — stored so feedback can report it */
   private lastQuestion = "";
 
@@ -148,6 +150,11 @@ export class BubbleManager {
     this.repositionFn = fn;
   }
 
+  /** Update the target element's center X so the bubble positions on the open side. */
+  setTargetCenterX(x: number | undefined): void {
+    this.targetCenterX = x;
+  }
+
   /**
    * Set (or clear) the tour "Next →" button callback.
    * Pass a function to show the button; pass null to hide it.
@@ -165,8 +172,8 @@ export class BubbleManager {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    // Determine which side has enough room for the bubble
-    const side = computeBubbleSide(charX, CHAR_SIZE, BUBBLE_WIDTH);
+    // Determine which side has enough room — prefer the side away from the target
+    const side = computeBubbleSide(charX, CHAR_SIZE, BUBBLE_WIDTH, this.targetCenterX);
     this.bubble.setAttribute("data-side", side);
 
     const bh = this.bubble.offsetHeight;

@@ -11,5 +11,9 @@ export declare function computeCharacterPosition(rect: DOMRect | null, side?: "l
 /**
  * Given the character's position, decide which side of it the bubble should
  * appear on — keeping the bubble within the viewport.
+ *
+ * When targetCenterX is provided (center of the spotlighted element), the bubble
+ * is placed on the side AWAY from the target (open space). Falls back to the
+ * opposite side only if there is not enough room.
  */
-export declare function computeBubbleSide(charX: number, charSize: number, bubbleWidth: number): "right" | "left";
+export declare function computeBubbleSide(charX: number, charSize: number, bubbleWidth: number, targetCenterX?: number): "right" | "left";
