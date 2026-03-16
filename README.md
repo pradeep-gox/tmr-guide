@@ -37,9 +37,14 @@ import { TMRGuide } from "tmr-guide";
 TMRGuide.init({
   apiEndpoint: "/api/onboarding/assist",
   userId: "user-123",
+  emailId: "user@example.com",
   theme: { primaryColor: "#ff6700", characterSize: 72 },
   idlePosition: "bottom-left",
+  idlePositionOffsetY: 36,
   toggleStyle: "hover",
+  highlight: { mode: "pulse", ringWidth: 2, fadeDuration: 3000 },
+  onAskQuestion: (text) => console.log("User asked:", text),
+  onFeedback: (rating, question) => console.log(rating, question),
 });
 
 // 2. Show the guide at a specific step
@@ -49,10 +54,7 @@ TMRGuide.show({
   target: '[data-guide-target="connect-btn"]',
   position: "left",
   showInput: true,
-  context: {
-    stepLabel: "Connect Account",
-    secondsOnStep: 0,
-  },
+  context: { subscriptionContext: "Step: Connect Account\n..." },
 });
 
 // 3. Celebrate a milestone
@@ -69,16 +71,22 @@ TMRGuide.destroy();
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `apiEndpoint` | `string` | **required** | URL to POST AI questions to |
-| `userId` | `string` | `""` | Passed to AI backend inside context |
-| `theme.primaryColor` | `string` | `"#ff6700"` | Spotlight ring + bubble accent colour |
+| `userId` | `string` | — | Forwarded to AI backend |
+| `emailId` | `string` | — | Forwarded to AI backend |
+| `theme.primaryColor` | `string` | `"#ff6700"` | Ring, bubble accent, robot eye colour |
 | `theme.characterSize` | `number` | `72` | Character container size in px |
 | `idlePosition` | `IdlePosition` | `"bottom-right"` | Corner the character rests in when idle/disabled |
 | `idlePositionOffsetX` | `number` | `24` | Horizontal px offset from the corner edge |
 | `idlePositionOffsetY` | `number` | `50` | Vertical px offset from the corner edge |
-| `toggleStyle` | `ToggleStyle` | `"hover"` | How the Enable/Disable toggle is shown |
-| `onStepChange` | `(stepId: string) => void` | — | Called whenever `show()` is called |
-| `onAskQuestion` | `(text: string) => void` | — | Called when user submits a question |
-| `onDismiss` | `() => void` | — | Called when bubble is dismissed |
+| `toggleStyle` | `ToggleStyle` | `"hover"` | How the Enable/Disable toggle is presented |
+| `highlight.mode` | `HighlightMode` | `"persistent"` | How the spotlight behaves |
+| `highlight.color` | `string` | `primaryColor` | Ring border colour (any CSS colour) |
+| `highlight.ringWidth` | `number` | `3` | Ring border width in px |
+| `highlight.fadeDuration` | `number` | `4000` | ms before fade-out for `timed` / `pulse` modes |
+| `onStepChange` | `(stepId) => void` | — | Called whenever `show()` is invoked |
+| `onAskQuestion` | `(text) => void` | — | Called when the user submits a question |
+| `onDismiss` | `() => void` | — | Called when the bubble is dismissed |
+| `onFeedback` | `(rating, question) => void` | — | Called when user taps 👍 or 👎 after an AI response |
 
 ### `IdlePosition`
 
@@ -88,38 +96,47 @@ type IdlePosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
 ### `ToggleStyle`
 
-Controls how the **Enable Guide / Disable Guide** toggle is presented to the user.
+| Value | Description |
+|---|---|
+| `"hover"` | Pill fades in when the user hovers the character (default) |
+| `"below"` | Pill always visible directly below the character |
+| `"badge"` | Icon-only circle pinned to the top-right corner of the character |
+| `"corner-chip"` | Separate fixed pill anchored to the same viewport corner as `idlePosition` |
+| `"context-menu"` | No persistent UI — right-click the character to open a tiny menu |
+
+### `HighlightMode`
 
 | Value | Description |
 |---|---|
-| `"hover"` | Pill fades in when user hovers the character (default) |
-| `"below"` | Pill always visible directly below the character |
-| `"badge"` | Small icon-only circle pinned to the top-right corner of the character |
-| `"corner-chip"` | Separate fixed pill anchored to the same viewport corner as `idlePosition` |
-| `"context-menu"` | No persistent UI — right-click the character to open a tiny menu |
+| `"persistent"` | Overlay + ring stay on until the step changes (default) |
+| `"timed"` | Overlay + ring fade out after `fadeDuration` ms |
+| `"ring-only"` | No dark overlay — only the glowing ring is shown |
+| `"pulse"` | Ring pulses 3× to draw attention, then fades (recommended) |
 
 ---
 
 ## `TMRGuide.show(options)`
 
-Walk the character to a target element, highlight it, and display a message.
+Walk the character to a target element, spotlight it, and display a message.
 
 ```ts
 interface ShowOptions {
-  stepId: string;                            // Sent to AI as context
-  message: string;                           // Supports **bold** and [links](url)
-  target?: string;                           // CSS selector to highlight. Omit for no spotlight.
-  position?: "left" | "right" | "top" | "bottom"; // Which side of target to stand on
-  context?: Record<string, unknown>;         // Extra context merged into AI requests
-  showInput?: boolean;                       // Show Q&A textarea in bubble (default: false)
+  stepId: string;                                   // Sent to AI as context
+  message: string;                                  // Supports **bold**, *italic*, `code`, - lists, [links](url)
+  target?: string;                                  // CSS selector to spotlight. Omit for corner-idle.
+  position?: "left" | "right" | "top" | "bottom";  // Which side of target the character stands on
+  context?: Record<string, unknown>;                // Extra context merged into AI requests
+  showInput?: boolean;                              // Show Q&A textarea in bubble (default: false)
 }
 ```
 
-Progress is always tracked even if the guide is currently disabled by the user — re-enabling resumes from the latest step.
+When `target` is omitted the character walks to its idle corner and opens the bubble there — useful for revisit messages or proactive nudges.
+
+When a `target` is supplied the spotlight auto-scrolls the element into view before highlighting it.
+
+Progress is always tracked even if the guide is disabled — re-enabling resumes from the latest step.
 
 ### Targeting elements
-
-Add `data-guide-target` attributes to your HTML elements:
 
 ```html
 <button data-guide-target="connect-btn">Connect</button>
@@ -129,30 +146,31 @@ Add `data-guide-target` attributes to your HTML elements:
 TMRGuide.show({ target: '[data-guide-target="connect-btn"]', ... });
 ```
 
+> **Dev warning:** If the selector matches nothing, the SDK logs `[tmr-guide] target "..." not found for step "..."` to the console.
+
 ---
 
 ## Other Methods
 
 ```ts
-// Celebrate a milestone — character jumps + sparkles
-// Optional message shown in bubble
+// Celebrate a milestone — character jumps + sparkles, optional bubble message
 TMRGuide.celebrate(message?: string): void
 
-// Enable the guide programmatically (persists in localStorage)
+// Enable guide programmatically (persists in localStorage)
 TMRGuide.enable(): void
 
-// Disable the guide — character idles in corner, progress still tracked
+// Disable guide — character idles in corner, progress still tracked
 TMRGuide.disable(): void
 
 // Multi-step guided tour
 TMRGuide.tour(steps: TourStep[]): void
-TMRGuide.next(): void  // advance to next step
-TMRGuide.prev(): void  // go back
+TMRGuide.next(): void
+TMRGuide.prev(): void
 
-// Replace the default bot with a custom character renderer
+// Replace default bot with a custom renderer
 TMRGuide.setCharacter(renderer: CharacterRenderer): void
 
-// Tear down everything — removes DOM, stops all timers
+// Tear down — removes all DOM, cancels all timers
 TMRGuide.destroy(): void
 ```
 
@@ -160,22 +178,19 @@ TMRGuide.destroy(): void
 
 ## AI Integration
 
-When the user types a question in the bubble (`showInput: true`), the SDK calls:
+When the user submits a question, the SDK posts:
 
 ```
 POST {apiEndpoint}
 Content-Type: application/json
 
 {
-  "trigger": "user_question",
-  "question": "How do I connect Google Ads?",
-  "context": {
-    ...options.context,
-    "stepId": "connect-account",
-    "sessionId": "<uuid>",     ← generated per SDK session
-    "userId": "<config.userId>"
-  },
-  "history": [...]             ← last 12 messages
+  "sessionId": "<uuid>",
+  "userId": "<config.userId>",
+  "emailId": "<config.emailId>",
+  "message": "How do I connect Google Ads?",
+  "history": [...],              // last 12 turns
+  "subscriptionContext": "..."   // from options.context.subscriptionContext
 }
 ```
 
@@ -183,44 +198,60 @@ Expected response shape:
 
 ```ts
 {
-  message: string;
-  followUps?: string[];        // shown as clickable chips below the response
-  sources?: { title: string; url: string }[];
+  response: string;              // or message: string (either field accepted)
+  followUps?: string[];          // shown as clickable chips below the response
+  sources?: { title: string; url: string }[];  // rendered as a "Sources" section
 }
 ```
 
-On network error, a built-in fallback message is shown. Session ID is generated with `crypto.randomUUID()` when `init()` is called and persists for the lifetime of the SDK instance.
-
-> **For TMR's Maya backend:** `sessionId` and `userId` must be inside `context` (not top-level). Maya's DTO validates this strictly. The SDK already handles this correctly.
+Requests time out after **20 seconds** — the user sees "That took too long — please try again in a moment." Network errors show a generic fallback. Session ID is generated with `crypto.randomUUID()` in `init()` and lives for the lifetime of the SDK instance.
 
 ---
 
-## Character States
+## Speech Bubble — Markdown & Features
 
-The bot character has 5 animated states managed via CSS keyframes:
+The bubble text renderer supports a lightweight markdown subset:
+
+| Syntax | Output |
+|---|---|
+| `**bold**` | **bold** |
+| `*italic*` | *italic* |
+| `` `code` `` | inline code |
+| `- list item` | `<ul><li>` |
+| `[text](url)` | hyperlink |
+| `\n` | line break |
+
+After every AI response:
+
+- **Follow-up chips** — suggested questions shown as clickable pills
+- **Source citations** — if `sources[]` returned, rendered as a "Sources" list with links
+- **Feedback row** — 👍 / 👎 buttons; tapping either fires `onFeedback(rating, question)` and replaces the row with a short acknowledgement
+
+---
+
+## Character States & Animations
 
 | State | When | Animation |
 |---|---|---|
-| `idle` | Default, between actions | Gentle float up/down |
+| `idle` | Default, between actions | Gentle float + random blinks (every 2.5–6s) |
 | `walking` | Moving to a new target | Side-to-side waddle |
 | `talking` | Showing a message | Mouth opens/closes |
 | `thinking` | Waiting for AI response | Eyes shift upward |
 | `celebrating` | After `celebrate()` | Jump + sparkle particles |
 
+All animations respect `prefers-reduced-motion`.
+
 ---
 
 ## Custom Characters
 
-Implement the `CharacterRenderer` interface to swap in a Lottie animation, PNG sprite, or any other renderer:
-
 ```ts
 interface CharacterRenderer {
-  mount(container: HTMLElement): void;    // attach your character DOM/canvas to container
-  setState(state: CharacterState): void;  // react to state changes
-  destroy(): void;                        // clean up
+  mount(container: HTMLElement): void;
+  setState(state: CharacterState): void;
+  destroy(): void;
 }
 
-// Usage
 TMRGuide.init({ ... });
 TMRGuide.setCharacter(new MyLottieCharacter("robot.json"));
 ```
@@ -229,8 +260,6 @@ TMRGuide.setCharacter(new MyLottieCharacter("robot.json"));
 
 ## Guided Tours
 
-Chain multiple steps into a linear tour:
-
 ```ts
 TMRGuide.tour([
   {
@@ -238,20 +267,18 @@ TMRGuide.tour([
     message: "First, select your agency type.",
     target: '[data-guide-target="agency-cards"]',
     position: "right",
-    showInput: false,
     waitFor: '[data-guide-target="agency-cards"] .card', // auto-advance on click
   },
   {
     stepId: "step-2",
     message: "Now choose your data source.",
     target: '[data-guide-target="connector-list"]',
-    position: "right",
     showInput: true,
   },
 ]);
 ```
 
-`waitFor` is a CSS selector — when an element matching it receives a `click` or `change` event, the tour auto-advances.
+`waitFor` — CSS selector; when a matching element receives a `click` or `change` event, the tour auto-advances.
 
 ---
 
@@ -262,15 +289,14 @@ TMRGuide.tour([
 import { useEffect, useRef } from "react";
 import { TMRGuide } from "tmr-guide";
 
-interface Props {
-  stepId: string;
-}
+interface Props { stepId: string }
 
 export function GuideController({ stepId }: Props) {
   const initialised = useRef(false);
   const secondsOnStep = useRef(0);
+  const hasInteracted = useRef(false);
 
-  // Init once on mount
+  // Init once — wait for userId so backend can rate-limit per user
   useEffect(() => {
     if (initialised.current) return;
     initialised.current = true;
@@ -278,11 +304,10 @@ export function GuideController({ stepId }: Props) {
       apiEndpoint: "/api/assist",
       theme: { primaryColor: "#ff6700" },
       idlePosition: "bottom-left",
+      highlight: { mode: "pulse" },
+      onAskQuestion: () => { hasInteracted.current = true; },
     });
-    return () => {
-      TMRGuide.destroy();
-      initialised.current = false;
-    };
+    return () => { TMRGuide.destroy(); initialised.current = false; };
   }, []);
 
   // Track time on step
@@ -294,17 +319,24 @@ export function GuideController({ stepId }: Props) {
 
   // Show on step change
   useEffect(() => {
-    const timer = setTimeout(() => {
-      TMRGuide.show({
-        stepId,
-        message: `You're on step: ${stepId}`,
-        context: { stepLabel: stepId, secondsOnStep: secondsOnStep.current },
-      });
-    }, 400); // wait for DOM to render
-    return () => clearTimeout(timer);
+    hasInteracted.current = false;
+    const t = setTimeout(() => {
+      TMRGuide.show({ stepId, message: `You're on: ${stepId}`, showInput: true });
+    }, 400);
+    return () => clearTimeout(t);
   }, [stepId]);
 
-  return null; // no DOM output
+  // Proactive nudge after 65s of inactivity
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (!hasInteracted.current) {
+        TMRGuide.show({ stepId, message: "Still there? Feel free to ask me anything!" });
+      }
+    }, 65_000);
+    return () => clearTimeout(t);
+  }, [stepId]);
+
+  return null;
 }
 ```
 
@@ -317,48 +349,55 @@ export function GuideController({ stepId }: Props) {
 ```
 src/
   index.ts                  ← TMRGuideSDK class + singleton export
-  types.ts                  ← All shared interfaces (ShowOptions, TMRGuideConfig, etc.)
+  types.ts                  ← All shared interfaces + HighlightMode, ToggleStyle, etc.
 
   character/
-    BotCharacter.ts         ← SVG robot built from DOM elements; 5 CSS-animated states
-    CharacterRenderer.ts    ← Interface for swappable character implementations
-    styles.ts               ← CSS keyframe animations injected via <style>
+    BotCharacter.ts         ← SVG robot; ellipse eyes (blink via ry); 5 CSS-animated states
+    CharacterRenderer.ts    ← Interface for swappable renderers
+    styles.ts               ← Keyframe CSS injected via <style>
 
   spotlight/
-    SpotlightManager.ts     ← Full-screen SVG overlay with mask-based transparent hole
-                              Orange highlight ring via box-shadow on separate div
+    SpotlightManager.ts     ← SVG overlay with mask hole + separate ring div
+                              Scrolls target into view before showing
                               ResizeObserver + scroll listener keep hole in sync
+                              4 highlight modes: persistent / timed / ring-only / pulse
 
   bubble/
     BubbleManager.ts        ← Speech bubble with typewriter effect (18ms/char)
-                              showLoading() animated dots → showResponse() transition
-                              Smart side (left/right) keeps bubble in viewport
-                              Q&A textarea + send button + follow-up chips
-    styles.ts               ← Bubble CSS injected via <style>
+                              Markdown: bold, italic, code, lists, links
+                              showLoading() dots → showResponse() transition
+                              Follow-up chips, source citations, thumbs feedback
+                              Smart left/right side keeps bubble in viewport
+                              max-height cap + scrollable inner area prevents overflow
+    styles.ts               ← Bubble CSS (color-scheme:light, list/code styles, etc.)
 
   ai/
-    AIManager.ts            ← Session UUID, last-12-message history, fetch wrapper
-                              sessionId + userId merged into context before sending
+    AIManager.ts            ← Session UUID, history (last 12), AbortController (20s timeout)
+                              Returns followUps + sources from response
 
   tour/
-    TourManager.ts          ← Sequences TourStep[], waitFor auto-advance on click/change
+    TourManager.ts          ← Sequences TourStep[], waitFor auto-advance
 
   utils/
-    dom.ts                  ← injectCSS(), createElement(), getRect()
+    dom.ts                  ← injectCSS(), createElement(), getRect(), prefersReducedMotion()
     position.ts             ← computeCharacterPosition(), computeBubbleSide()
 ```
 
 ### Key design decisions
 
-**Framework-agnostic:** Zero runtime dependencies. Pure DOM manipulation. Works via `<script>` tag (IIFE) or ESM import. State is entirely in-class — no React, no stores.
+**Framework-agnostic:** Zero runtime dependencies. Pure DOM manipulation. Works via `<script>` tag or ESM import.
 
-**Dual build:** Vite produces both `tmr-guide.esm.js` (for bundlers) and `tmr-guide.iife.js` (for script tags). The `exports` field in `package.json` ensures turbopack resolves the ESM build correctly.
+**Dual build:** Vite produces `tmr-guide.esm.js` (bundlers) and `tmr-guide.iife.js` (script tags). The `exports` field ensures Turbopack resolves ESM correctly.
 
-**Spotlight:** Full-screen SVG with a `<mask>` that cuts a transparent hole over the target. The `feComposite` filter is not used — the hole is a black `<rect>` inside the mask, which inverts to transparent over the dark overlay. An orange ring is a separate positioned `<div>` with `box-shadow: 0 0 0 3px orange`.
+**Spotlight:** Full-screen SVG with a `<mask>` that cuts a transparent hole over the target. A separate `<div>` provides the coloured ring via `box-shadow`. Ring animation (`tmrg-ring-pulse`) is a CSS keyframe on the ring element. Resize handled by `ResizeObserver` + `window.scroll`.
 
-**Hover toggle fix:** The toggle button is positioned `bottom: -26px` outside the character container's border box. Pure CSS `:hover` loses the state as the cursor crosses the gap. Fixed with JS `mouseenter`/`mouseleave` + 200ms grace period on both the container and the button.
+**Bubble overflow prevention:** `max-height: min(380px, calc(100vh - 120px))` caps bubble height. A flex scrollable inner div (`tmrg-bubble-scroll`) prevents content from pushing outside. After the typewriter finishes, `repositionFn` is called to re-clamp the bubble within the viewport.
 
-**Enable/disable persistence:** `localStorage.setItem("tmr-guide-enabled", "true/false")`. The enabled state is read in `init()` so it survives page reloads.
+**Tail anchoring:** Bubble tail is anchored at `bottom: 18px`, and `positionNear()` computes `top` such that the tail aligns with the robot's mouth (≈42% from top of 72px SVG viewBox, i.e. y≈30).
+
+**Enable/disable persistence:** `localStorage("tmr-guide-enabled")` read in `init()` so state survives page reloads.
+
+**Resize debounce:** `handleResize()` is debounced 100ms to avoid excessive layout recomputation while the user drags a window edge.
 
 ---
 
@@ -373,14 +412,14 @@ git push
 git rev-parse HEAD  # copy this SHA
 ```
 
-Then in the consuming project's `package.json`:
+In the consuming project's `package.json`:
 
 ```json
 "tmr-guide": "github:pradeep-gox/tmr-guide#<new-sha>"
 ```
 
 ```bash
-bun install   # or npm install / pnpm install
+bun install
 ```
 
 The `dist/` folder is committed to the repo so GitHub-sourced installs work without a build step.
