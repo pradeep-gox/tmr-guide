@@ -1391,7 +1391,7 @@ class AIManager {
     this.sessionId = crypto.randomUUID();
   }
   /**
-   * Ask Maya a question.
+   * Ask TMR AI Assistant a question.
    * Automatically times out after 20 seconds and returns a friendly fallback.
    */
   async ask(message, context) {
@@ -1418,7 +1418,9 @@ class AIManager {
       const data = await res.json();
       const replyText = data.response ?? data.message ?? "";
       const followUps = Array.isArray(data.followUps) ? data.followUps : [];
-      const sources = Array.isArray(data.sources) ? data.sources : [];
+      const sources = Array.isArray(
+        data.sources
+      ) ? data.sources : [];
       this.history.push({ role: "user", content: message });
       this.history.push({ role: "assistant", content: replyText });
       return { message: replyText, followUps, sources };

@@ -7,7 +7,7 @@ export declare class AIManager {
     private history;
     constructor(apiEndpoint: string, userId?: string | undefined, emailId?: string | undefined);
     /**
-     * Ask Maya a question.
+     * Ask TMR AI Assistant a question.
      * Automatically times out after 20 seconds and returns a friendly fallback.
      */
     ask(message: string, context: Record<string, unknown>): Promise<AIResponse>;

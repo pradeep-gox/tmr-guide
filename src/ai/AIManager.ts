@@ -18,7 +18,7 @@ export class AIManager {
   }
 
   /**
-   * Ask Maya a question.
+   * Ask TMR AI Assistant a question.
    * Automatically times out after 20 seconds and returns a friendly fallback.
    */
   async ask(
@@ -56,8 +56,14 @@ export class AIManager {
       const data = await res.json();
 
       const replyText: string = data.response ?? data.message ?? "";
-      const followUps: string[] = Array.isArray(data.followUps) ? data.followUps : [];
-      const sources: { title: string; url: string }[] = Array.isArray(data.sources) ? data.sources : [];
+      const followUps: string[] = Array.isArray(data.followUps)
+        ? data.followUps
+        : [];
+      const sources: { title: string; url: string }[] = Array.isArray(
+        data.sources,
+      )
+        ? data.sources
+        : [];
 
       this.history.push({ role: "user", content: message });
       this.history.push({ role: "assistant", content: replyText });
@@ -65,7 +71,8 @@ export class AIManager {
       return { message: replyText, followUps, sources };
     } catch (err) {
       clearTimeout(timeoutId);
-      const isTimeout = err instanceof DOMException && err.name === "AbortError";
+      const isTimeout =
+        err instanceof DOMException && err.name === "AbortError";
       return {
         message: isTimeout
           ? "That took too long — please try again in a moment."
