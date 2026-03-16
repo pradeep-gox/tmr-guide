@@ -962,6 +962,30 @@ var TMRGuide = function(exports) {
   transition: background 0.15s;
 }
 .tmrg-chip:hover { background: #ffedd5; }
+
+/* Tour navigation — "Next →" button shown during guided tours */
+.tmrg-tour-nav {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+.tmrg-tour-next {
+  background: #ff6700;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.15s;
+  font-family: inherit;
+}
+.tmrg-tour-next:hover { opacity: 0.85; }
 `;
   const CHAR_SIZE$1 = 72;
   const MARGIN = 16;
@@ -1018,6 +1042,8 @@ var TMRGuide = function(exports) {
       this.onAsk = null;
       this.onDismiss = null;
       this.onFeedback = null;
+      this.onNext = null;
+      this.navEl = null;
       this.repositionFn = null;
       this.lastQuestion = "";
     }
@@ -1063,6 +1089,19 @@ var TMRGuide = function(exports) {
       followupsEl.className = "tmrg-followups";
       bubble.appendChild(followupsEl);
       this.followupsEl = followupsEl;
+      const navEl = document.createElement("div");
+      navEl.className = "tmrg-tour-nav";
+      navEl.style.display = "none";
+      const navBtn = document.createElement("button");
+      navBtn.className = "tmrg-tour-next";
+      navBtn.innerHTML = `Next <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+      navBtn.addEventListener("click", () => {
+        var _a;
+        return (_a = this.onNext) == null ? void 0 : _a.call(this);
+      });
+      navEl.appendChild(navBtn);
+      bubble.appendChild(navEl);
+      this.navEl = navEl;
       const inputRow = document.createElement("div");
       inputRow.className = "tmrg-bubble-input-row";
       inputRow.style.display = "none";
@@ -1098,14 +1137,23 @@ var TMRGuide = function(exports) {
       this.repositionFn = fn;
     }
     /**
+     * Set (or clear) the tour "Next →" button callback.
+     * Pass a function to show the button; pass null to hide it.
+     */
+    setOnNext(fn) {
+      this.onNext = fn;
+      if (this.navEl) this.navEl.style.display = fn ? "flex" : "none";
+    }
+    /**
      * Position the bubble so its tail aligns near the character's mouth.
      */
     positionNear(charX, charY, mouthOffsetY = CHAR_SIZE * 0.42) {
       if (!this.bubble) return;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
       const side = computeBubbleSide(charX, CHAR_SIZE, BUBBLE_WIDTH);
       this.bubble.setAttribute("data-side", side);
       const bh = this.bubble.offsetHeight;
-      const vh = window.innerHeight;
       const mouthY = charY + mouthOffsetY;
       let left;
       if (side === "right") {
@@ -1113,6 +1161,7 @@ var TMRGuide = function(exports) {
       } else {
         left = charX - BUBBLE_WIDTH - 12;
       }
+      left = Math.max(8, Math.min(vw - BUBBLE_WIDTH - 8, left));
       const TAIL_BOTTOM_OFFSET = 18 + 7;
       let top = mouthY - (bh - TAIL_BOTTOM_OFFSET);
       top = Math.max(12, Math.min(vh - bh - 12, top));
@@ -1175,9 +1224,11 @@ var TMRGuide = function(exports) {
       this.followupsEl = null;
       this.feedbackEl = null;
       this.sourcesEl = null;
+      this.navEl = null;
       this.inputRow = null;
       this.inputEl = null;
       this.repositionFn = null;
+      this.onNext = null;
     }
     // ─── private ───────────────────────────────────────────────────
     typeText(text, onDone) {
@@ -1530,13 +1581,14 @@ var TMRGuide = function(exports) {
       window.addEventListener("resize", this.resizeHandler, { passive: true });
     }
     show(options) {
-      var _a, _b, _c;
+      var _a, _b, _c, _d, _e;
       this.assertInit();
       this.currentOptions = options;
       (_b = (_a = this.config).onStepChange) == null ? void 0 : _b.call(_a, options.stepId);
+      if (!((_c = this.tourMgr) == null ? void 0 : _c.isActive())) (_d = this.bubble) == null ? void 0 : _d.setOnNext(null);
       if (!this.enabled) return;
       this.isVisible = true;
-      const primaryColor = ((_c = this.config.theme) == null ? void 0 : _c.primaryColor) ?? "#ff6700";
+      const primaryColor = ((_e = this.config.theme) == null ? void 0 : _e.primaryColor) ?? "#ff6700";
       if (options.target && !document.querySelector(options.target)) {
         console.warn(`[tmr-guide] target "${options.target}" not found for step "${options.stepId}"`);
       }
@@ -1574,13 +1626,18 @@ var TMRGuide = function(exports) {
       this.isVisible = false;
       this.spotlight.hide();
       this.bubble.hide();
+      this.bubble.setOnNext(null);
       this.character.setState("idle");
       (_b = (_a = this.config) == null ? void 0 : _a.onDismiss) == null ? void 0 : _b.call(_a);
     }
     /** Run a multi-step guided tour */
     tour(steps) {
       this.assertInit();
-      this.tourMgr.load(steps, (step) => this.show(step));
+      this.tourMgr.load(steps, (step) => {
+        this.show(step);
+        const isLast = this.tourMgr.current() === steps[steps.length - 1];
+        this.bubble.setOnNext(isLast ? null : () => this.tourMgr.next());
+      });
       this.tourMgr.start();
     }
     next() {

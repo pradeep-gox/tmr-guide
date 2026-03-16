@@ -266,4 +266,28 @@ export const BUBBLE_CSS = `
   transition: background 0.15s;
 }
 .tmrg-chip:hover { background: #ffedd5; }
+
+/* Tour navigation — "Next →" button shown during guided tours */
+.tmrg-tour-nav {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+.tmrg-tour-next {
+  background: #ff6700;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.15s;
+  font-family: inherit;
+}
+.tmrg-tour-next:hover { opacity: 0.85; }
 `;

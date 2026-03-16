@@ -25,6 +25,8 @@ export class BubbleManager {
   private onAsk: BubbleOnAsk | null = null;
   private onDismiss: BubbleOnDismiss | null = null;
   private onFeedback: BubbleOnFeedback | null = null;
+  private onNext: (() => void) | null = null;
+  private navEl: HTMLElement | null = null;
   /** Called after typewriter finishes so the host can re-clamp position */
   private repositionFn: (() => void) | null = null;
   /** Last user question — stored so feedback can report it */
@@ -93,6 +95,18 @@ export class BubbleManager {
     bubble.appendChild(followupsEl);
     this.followupsEl = followupsEl;
 
+    // Tour navigation row — "Next →" shown only during guided tours
+    const navEl = document.createElement("div");
+    navEl.className = "tmrg-tour-nav";
+    navEl.style.display = "none";
+    const navBtn = document.createElement("button");
+    navBtn.className = "tmrg-tour-next";
+    navBtn.innerHTML = `Next <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+    navBtn.addEventListener("click", () => this.onNext?.());
+    navEl.appendChild(navBtn);
+    bubble.appendChild(navEl);
+    this.navEl = navEl;
+
     // Q&A input row (outside scroll)
     const inputRow = document.createElement("div");
     inputRow.className = "tmrg-bubble-input-row";
@@ -135,15 +149,27 @@ export class BubbleManager {
   }
 
   /**
+   * Set (or clear) the tour "Next →" button callback.
+   * Pass a function to show the button; pass null to hide it.
+   */
+  setOnNext(fn: (() => void) | null): void {
+    this.onNext = fn;
+    if (this.navEl) this.navEl.style.display = fn ? "flex" : "none";
+  }
+
+  /**
    * Position the bubble so its tail aligns near the character's mouth.
    */
   positionNear(charX: number, charY: number, mouthOffsetY = CHAR_SIZE * 0.42): void {
     if (!this.bubble) return;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Determine which side has enough room for the bubble
     const side = computeBubbleSide(charX, CHAR_SIZE, BUBBLE_WIDTH);
     this.bubble.setAttribute("data-side", side);
 
     const bh = this.bubble.offsetHeight;
-    const vh = window.innerHeight;
     const mouthY = charY + mouthOffsetY;
 
     let left: number;
@@ -152,6 +178,9 @@ export class BubbleManager {
     } else {
       left = charX - BUBBLE_WIDTH - 12;
     }
+
+    // Clamp horizontally so the bubble never overflows the viewport on either side
+    left = Math.max(8, Math.min(vw - BUBBLE_WIDTH - 8, left));
 
     const TAIL_BOTTOM_OFFSET = 18 + 7;
     let top = mouthY - (bh - TAIL_BOTTOM_OFFSET);
@@ -224,9 +253,11 @@ export class BubbleManager {
     this.followupsEl = null;
     this.feedbackEl = null;
     this.sourcesEl = null;
+    this.navEl = null;
     this.inputRow = null;
     this.inputEl = null;
     this.repositionFn = null;
+    this.onNext = null;
   }
 
   // ─── private ───────────────────────────────────────────────────

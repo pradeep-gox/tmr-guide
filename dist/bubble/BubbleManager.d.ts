@@ -15,12 +15,19 @@ export declare class BubbleManager {
     private onAsk;
     private onDismiss;
     private onFeedback;
+    private onNext;
+    private navEl;
     /** Called after typewriter finishes so the host can re-clamp position */
     private repositionFn;
     /** Last user question — stored so feedback can report it */
     private lastQuestion;
     init(root: HTMLElement, onAsk: BubbleOnAsk, onDismiss: BubbleOnDismiss, onFeedback?: BubbleOnFeedback): void;
     setRepositionFn(fn: () => void): void;
+    /**
+     * Set (or clear) the tour "Next →" button callback.
+     * Pass a function to show the button; pass null to hide it.
+     */
+    setOnNext(fn: (() => void) | null): void;
     /**
      * Position the bubble so its tail aligns near the character's mouth.
      */

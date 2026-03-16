@@ -117,6 +117,8 @@ class TMRGuideSDK {
     // Always track progress regardless of enabled state
     this.currentOptions = options;
     this.config!.onStepChange?.(options.stepId);
+    // Clear tour nav when show() is called directly (not via tour)
+    if (!this.tourMgr?.isActive()) this.bubble?.setOnNext(null);
 
     // When disabled: track progress but stay idle in corner
     if (!this.enabled) return;
@@ -178,6 +180,7 @@ class TMRGuideSDK {
     this.isVisible = false;
     this.spotlight!.hide();
     this.bubble!.hide();
+    this.bubble!.setOnNext(null);
     this.character!.setState("idle");
     this.config?.onDismiss?.();
   }
@@ -185,7 +188,12 @@ class TMRGuideSDK {
   /** Run a multi-step guided tour */
   tour(steps: TourStep[]): void {
     this.assertInit();
-    this.tourMgr!.load(steps, (step) => this.show(step));
+    this.tourMgr!.load(steps, (step) => {
+      this.show(step);
+      // Show "Next →" button when not on the last step
+      const isLast = this.tourMgr!.current() === steps[steps.length - 1];
+      this.bubble!.setOnNext(isLast ? null : () => this.tourMgr!.next());
+    });
     this.tourMgr!.start();
   }
 
