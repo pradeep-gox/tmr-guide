@@ -1670,11 +1670,13 @@ class TMRGuideSDK {
   /** Celebrate a milestone (character jumps, optional message in bubble) */
   celebrate(message) {
     this.assertInit();
+    if (!this.enabled) return;
     this.character.setState("celebrating");
     if (message) {
       this.bubble.show(message);
       requestAnimationFrame(() => this.bubble.positionNear(this.charX, this.charY));
       this.isVisible = true;
+      this.attachClickOutside();
     }
     setTimeout(() => this.character.setState("idle"), 1800);
   }
