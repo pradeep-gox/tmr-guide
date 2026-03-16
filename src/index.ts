@@ -512,7 +512,10 @@ class TMRGuideSDK {
     setTimeout(() => {
       this.clickOutsideHandler = (e: MouseEvent) => {
         if (!this.isVisible) return;
-        if (this.root && this.root.contains(e.target as Node)) return;
+        // Use composedPath() so elements removed from the DOM during their own click handler
+        // (e.g. follow-up chips that clear their container) still resolve correctly.
+        const path = e.composedPath();
+        if (this.root && path.includes(this.root)) return;
         this.hide();
       };
       document.addEventListener("click", this.clickOutsideHandler, { passive: true });

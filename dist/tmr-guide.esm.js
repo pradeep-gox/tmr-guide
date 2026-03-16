@@ -1257,9 +1257,12 @@ class BubbleManager {
     const plain = text.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1").replace(/`([^`]+)`/g, "$1").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/^[-*]\s+/gm, "• ");
     let i = 0;
     this.textEl.textContent = "";
+    const REPOSITION_EVERY = 30;
     const tick = () => {
+      var _a;
       if (i < plain.length) {
         this.textEl.textContent += plain[i++];
+        if (i % REPOSITION_EVERY === 0) (_a = this.repositionFn) == null ? void 0 : _a.call(this);
         this.typeTimer = setTimeout(tick, TYPEWRITER_INTERVAL);
       } else {
         this.textEl.innerHTML = html;
@@ -1950,7 +1953,8 @@ class TMRGuideSDK {
     setTimeout(() => {
       this.clickOutsideHandler = (e) => {
         if (!this.isVisible) return;
-        if (this.root && this.root.contains(e.target)) return;
+        const path = e.composedPath();
+        if (this.root && path.includes(this.root)) return;
         this.hide();
       };
       document.addEventListener("click", this.clickOutsideHandler, { passive: true });

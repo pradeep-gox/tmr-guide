@@ -289,9 +289,11 @@ export class BubbleManager {
     let i = 0;
     this.textEl.textContent = "";
 
+    const REPOSITION_EVERY = 30; // reposition every N chars to keep bubble in viewport while typing
     const tick = () => {
       if (i < plain.length) {
         this.textEl!.textContent += plain[i++];
+        if (i % REPOSITION_EVERY === 0) this.repositionFn?.();
         this.typeTimer = setTimeout(tick, TYPEWRITER_INTERVAL);
       } else {
         this.textEl!.innerHTML = html;
