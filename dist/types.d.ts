@@ -65,6 +65,8 @@ export interface TMRGuideConfig {
     onStepChange?: (stepId: string) => void;
     onAskQuestion?: (text: string) => void;
     onDismiss?: () => void;
+    /** Called when the user rates an AI response with thumbs up or down */
+    onFeedback?: (rating: "up" | "down", question: string) => void;
 }
 export interface ShowOptions {
     /** Step ID sent to AI as context */

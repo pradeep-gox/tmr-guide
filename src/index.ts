@@ -33,6 +33,7 @@ class TMRGuideSDK {
   private toggleBtn: HTMLElement | null = null;
   private contextMenu: HTMLElement | null = null;
   private resizeHandler: (() => void) | null = null;
+  private resizeDebounce: ReturnType<typeof setTimeout> | null = null;
   private readonly STORAGE_KEY = "tmr-guide-enabled";
 
   // ─── Public API ─────────────────────────────────────────────────
@@ -82,6 +83,7 @@ class TMRGuideSDK {
       root,
       (text) => this.ask(text),
       () => this.hide(),
+      (rating, question) => this.config?.onFeedback?.(rating, question),
     );
     // Re-clamp position after typewriter so long AI responses never overflow
     this.bubble.setRepositionFn(() => this.bubble!.positionNear(this.charX, this.charY));
@@ -102,8 +104,11 @@ class TMRGuideSDK {
       }
     });
 
-    // Reposition character + bubble when the viewport is resized
-    this.resizeHandler = () => this.handleResize();
+    // Reposition character + bubble when the viewport is resized (debounced 100ms)
+    this.resizeHandler = () => {
+      if (this.resizeDebounce) clearTimeout(this.resizeDebounce);
+      this.resizeDebounce = setTimeout(() => this.handleResize(), 100);
+    };
     window.addEventListener("resize", this.resizeHandler, { passive: true });
   }
 
@@ -119,6 +124,11 @@ class TMRGuideSDK {
     this.isVisible = true;
 
     const primaryColor = this.config!.theme?.primaryColor ?? "#ff6700";
+
+    // Warn in development if the target selector does not match any element
+    if (options.target && !document.querySelector(options.target)) {
+      console.warn(`[tmr-guide] target "${options.target}" not found for step "${options.stepId}"`);
+    }
 
     // 1. Walk character toward target (or idle corner when no target)
     const rect = options.target ? getRect(options.target) : null;
@@ -205,7 +215,7 @@ class TMRGuideSDK {
     const response = await this.ai!.ask(text, context);
 
     this.character!.setState("talking");
-    this.bubble!.showResponse(response.message, response.followUps ?? []);
+    this.bubble!.showResponse(response.message, response.followUps ?? [], response.sources ?? []);
     setTimeout(() => this.character!.setState("idle"), 1800);
   }
 
@@ -256,6 +266,7 @@ class TMRGuideSDK {
   }
 
   destroy(): void {
+    if (this.resizeDebounce) { clearTimeout(this.resizeDebounce); this.resizeDebounce = null; }
     if (this.resizeHandler) {
       window.removeEventListener("resize", this.resizeHandler);
       this.resizeHandler = null;

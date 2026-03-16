@@ -11,6 +11,9 @@ var TMRGuide = function(exports) {
       this.mouthEl = null;
       this.eyeL = null;
       this.eyeR = null;
+      this.eyeShineL = null;
+      this.eyeShineR = null;
+      this.blinkTimer = null;
       this.mouthTimer = null;
       this.mouthOpen = false;
     }
@@ -23,6 +26,7 @@ var TMRGuide = function(exports) {
       inner.appendChild(svg);
       container.appendChild(inner);
       this.inner = inner;
+      this.scheduleBlink();
     }
     setState(state) {
       if (!this.container) return;
@@ -45,12 +49,44 @@ var TMRGuide = function(exports) {
     }
     destroy() {
       this.stopMouthAnim();
+      if (this.blinkTimer) {
+        clearTimeout(this.blinkTimer);
+        this.blinkTimer = null;
+      }
       this.container = null;
       this.inner = null;
       this.svg = null;
       this.mouthEl = null;
+      this.eyeL = null;
+      this.eyeR = null;
     }
     // ─── private ───────────────────────────────────────────────────
+    /** Schedule the next blink at a random interval (2.5s – 6s). */
+    scheduleBlink() {
+      const delay = 2500 + Math.random() * 3500;
+      this.blinkTimer = setTimeout(() => {
+        this.blink();
+        this.scheduleBlink();
+      }, delay);
+    }
+    /**
+     * Quick blink: squish ry to near-zero for 120ms then restore.
+     * Also hide the shine dot so it doesn't float in mid-air.
+     */
+    blink() {
+      if (!this.eyeL || !this.eyeR) return;
+      const BLINK_DUR = 120;
+      this.eyeL.setAttribute("ry", "0.6");
+      this.eyeR.setAttribute("ry", "0.6");
+      if (this.eyeShineL) this.eyeShineL.style.opacity = "0";
+      if (this.eyeShineR) this.eyeShineR.style.opacity = "0";
+      setTimeout(() => {
+        if (this.eyeL) this.eyeL.setAttribute("ry", "4");
+        if (this.eyeR) this.eyeR.setAttribute("ry", "4");
+        if (this.eyeShineL) this.eyeShineL.style.opacity = "1";
+        if (this.eyeShineR) this.eyeShineR.style.opacity = "1";
+      }, BLINK_DUR);
+    }
     buildSVG() {
       const s = this.size;
       const c = this.primaryColor;
@@ -107,29 +143,36 @@ var TMRGuide = function(exports) {
       antennaBall.setAttribute("r", "3");
       antennaBall.setAttribute("fill", c);
       svg.appendChild(antennaBall);
-      const eyeL = document.createElementNS(ns, "circle");
+      const eyeL = document.createElementNS(ns, "ellipse");
       eyeL.setAttribute("cx", "29");
       eyeL.setAttribute("cy", "22");
-      eyeL.setAttribute("r", "4");
+      eyeL.setAttribute("rx", "4");
+      eyeL.setAttribute("ry", "4");
       eyeL.setAttribute("fill", c);
       svg.appendChild(eyeL);
       this.eyeL = eyeL;
-      const eyeR = document.createElementNS(ns, "circle");
+      const eyeR = document.createElementNS(ns, "ellipse");
       eyeR.setAttribute("cx", "43");
       eyeR.setAttribute("cy", "22");
-      eyeR.setAttribute("r", "4");
+      eyeR.setAttribute("rx", "4");
+      eyeR.setAttribute("ry", "4");
       eyeR.setAttribute("fill", c);
       svg.appendChild(eyeR);
       this.eyeR = eyeR;
-      [eyeL, eyeR].forEach((eye, i) => {
-        const shine = document.createElementNS(ns, "circle");
-        const cx = i === 0 ? "31" : "45";
-        shine.setAttribute("cx", cx);
-        shine.setAttribute("cy", "20");
-        shine.setAttribute("r", "1.5");
-        shine.setAttribute("fill", "white");
-        svg.appendChild(shine);
-      });
+      const shineL = document.createElementNS(ns, "circle");
+      shineL.setAttribute("cx", "31");
+      shineL.setAttribute("cy", "20");
+      shineL.setAttribute("r", "1.5");
+      shineL.setAttribute("fill", "white");
+      svg.appendChild(shineL);
+      this.eyeShineL = shineL;
+      const shineR = document.createElementNS(ns, "circle");
+      shineR.setAttribute("cx", "45");
+      shineR.setAttribute("cy", "20");
+      shineR.setAttribute("r", "1.5");
+      shineR.setAttribute("fill", "white");
+      svg.appendChild(shineR);
+      this.eyeShineR = shineR;
       const mouth = document.createElementNS(ns, "rect");
       mouth.setAttribute("x", "28");
       mouth.setAttribute("y", "28");
@@ -540,6 +583,10 @@ var TMRGuide = function(exports) {
     show(targetSelector, opts = {}) {
       this.clearFadeTimer();
       this.currentTarget = targetSelector;
+      const targetEl = document.querySelector(targetSelector);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      }
       const mode = opts.mode ?? "persistent";
       const color = opts.color ?? "#ff6700";
       const width = opts.ringWidth ?? 3;
@@ -668,6 +715,8 @@ var TMRGuide = function(exports) {
   transform-origin: bottom left;
   opacity: 0;
   transform: scale(0.85) translateY(8px);
+  /* Force light mode — prevents Arc/Chrome dark-mode inversion */
+  color-scheme: light;
 }
 .tmrg-bubble.visible {
   opacity: 1;
@@ -734,7 +783,6 @@ var TMRGuide = function(exports) {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  /* subtle scrollbar */
   scrollbar-width: thin;
   scrollbar-color: #e5e7eb transparent;
 }
@@ -751,8 +799,30 @@ var TMRGuide = function(exports) {
   padding-right: 12px;
   min-height: 20px;
 }
-.tmrg-bubble-text b { font-weight: 600; }
-.tmrg-bubble-text a { color: #ff6700; text-decoration: underline; }
+.tmrg-bubble-text b  { font-weight: 600; color: #111827; }
+.tmrg-bubble-text em { font-style: italic; }
+.tmrg-bubble-text a  { color: #ff6700; text-decoration: underline; }
+
+/* Inline code */
+.tmrg-bubble-text .tmrg-code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+  background: #f3f4f6;
+  color: #374151;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+/* Unordered list inside bubble text */
+.tmrg-bubble-text ul {
+  margin: 4px 0;
+  padding-left: 16px;
+  list-style: disc;
+}
+.tmrg-bubble-text li {
+  margin: 2px 0;
+  line-height: 1.5;
+}
 
 /* Typing dots */
 .tmrg-typing {
@@ -776,6 +846,62 @@ var TMRGuide = function(exports) {
 @media (prefers-reduced-motion: reduce) {
   .tmrg-typing span { animation: none; }
   .tmrg-bubble { transition: opacity 0.15s ease !important; }
+}
+
+/* Source citations */
+.tmrg-sources {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+.tmrg-sources-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 4px;
+}
+.tmrg-source-link {
+  display: block;
+  font-size: 11.5px;
+  color: #ff6700;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.tmrg-source-link:hover { text-decoration: underline; }
+
+/* Feedback row */
+.tmrg-feedback {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.tmrg-feedback-label {
+  font-size: 10.5px;
+  color: #9ca3af;
+  margin-right: 2px;
+}
+.tmrg-feedback-btn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1.4;
+  transition: background 0.12s, border-color 0.12s;
+}
+.tmrg-feedback-btn:hover { background: #f9fafb; border-color: #d1d5db; }
+.tmrg-feedback-done {
+  font-size: 11px;
+  color: #6b7280;
 }
 
 /* Q&A input area */
@@ -883,18 +1009,23 @@ var TMRGuide = function(exports) {
       this.scrollEl = null;
       this.textEl = null;
       this.followupsEl = null;
+      this.feedbackEl = null;
+      this.sourcesEl = null;
       this.inputRow = null;
       this.inputEl = null;
       this.typingEl = null;
       this.typeTimer = null;
       this.onAsk = null;
       this.onDismiss = null;
+      this.onFeedback = null;
       this.repositionFn = null;
+      this.lastQuestion = "";
     }
-    init(root, onAsk, onDismiss) {
+    init(root, onAsk, onDismiss, onFeedback) {
       injectCSS("tmrg-bubble-css", BUBBLE_CSS);
       this.onAsk = onAsk;
       this.onDismiss = onDismiss;
+      this.onFeedback = onFeedback ?? null;
       const bubble = document.createElement("div");
       bubble.className = "tmrg-bubble";
       bubble.setAttribute("data-side", "right");
@@ -918,6 +1049,16 @@ var TMRGuide = function(exports) {
       typingEl.style.display = "none";
       scrollEl.appendChild(typingEl);
       this.typingEl = typingEl;
+      const sourcesEl = document.createElement("div");
+      sourcesEl.className = "tmrg-sources";
+      sourcesEl.style.display = "none";
+      bubble.appendChild(sourcesEl);
+      this.sourcesEl = sourcesEl;
+      const feedbackEl = document.createElement("div");
+      feedbackEl.className = "tmrg-feedback";
+      feedbackEl.style.display = "none";
+      bubble.appendChild(feedbackEl);
+      this.feedbackEl = feedbackEl;
       const followupsEl = document.createElement("div");
       followupsEl.className = "tmrg-followups";
       bubble.appendChild(followupsEl);
@@ -953,17 +1094,11 @@ var TMRGuide = function(exports) {
       root.appendChild(bubble);
       this.bubble = bubble;
     }
-    /**
-     * Register a callback invoked after the typewriter finishes.
-     * Use this to re-clamp the bubble position once its final height is known.
-     */
     setRepositionFn(fn) {
       this.repositionFn = fn;
     }
     /**
      * Position the bubble so its tail aligns near the character's mouth.
-     * charY is the character's top edge; mouthOffsetY is how far down the
-     * mouth sits within the character (default: ~42% from top — mouth y=30 of 72 viewBox).
      */
     positionNear(charX, charY, mouthOffsetY = CHAR_SIZE * 0.42) {
       if (!this.bubble) return;
@@ -989,6 +1124,8 @@ var TMRGuide = function(exports) {
       this.clearTypewriter();
       this.typingEl.style.display = "none";
       this.followupsEl.innerHTML = "";
+      this.clearFeedback();
+      this.clearSources();
       this.inputRow.style.display = showInput ? "flex" : "none";
       this.typeText(message, () => {
         var _a;
@@ -1003,15 +1140,21 @@ var TMRGuide = function(exports) {
       this.clearTypewriter();
       this.textEl.innerHTML = "";
       this.followupsEl.innerHTML = "";
+      this.clearFeedback();
+      this.clearSources();
       this.typingEl.style.display = "flex";
       this.bubble.classList.add("visible");
     }
-    showResponse(message, followUps = []) {
+    showResponse(message, followUps = [], sources = []) {
       if (!this.bubble) return;
       this.typingEl.style.display = "none";
+      this.clearFeedback();
+      this.clearSources();
       this.typeText(message, () => {
         var _a;
         this.renderFollowUps(followUps);
+        this.renderSources(sources);
+        this.renderFeedback();
         (_a = this.repositionFn) == null ? void 0 : _a.call(this);
         if (this.scrollEl) this.scrollEl.scrollTop = 0;
       });
@@ -1030,6 +1173,8 @@ var TMRGuide = function(exports) {
       this.textEl = null;
       this.typingEl = null;
       this.followupsEl = null;
+      this.feedbackEl = null;
+      this.sourcesEl = null;
       this.inputRow = null;
       this.inputEl = null;
       this.repositionFn = null;
@@ -1037,13 +1182,13 @@ var TMRGuide = function(exports) {
     // ─── private ───────────────────────────────────────────────────
     typeText(text, onDone) {
       if (!this.textEl) return;
-      const html = this.markdownLite(text);
+      const html = this.markdownToHtml(text);
       if (prefersReducedMotion()) {
         this.textEl.innerHTML = html;
         onDone == null ? void 0 : onDone();
         return;
       }
-      const plain = text.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+      const plain = text.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1").replace(/`([^`]+)`/g, "$1").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/^[-*]\s+/gm, "• ");
       let i = 0;
       this.textEl.textContent = "";
       const tick = () => {
@@ -1063,8 +1208,38 @@ var TMRGuide = function(exports) {
         this.typeTimer = null;
       }
     }
-    markdownLite(text) {
-      return text.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>').replace(/\n/g, "<br>");
+    /**
+     * Lightweight Markdown → HTML converter.
+     * Supports: **bold**, *italic*, `code`, [links](url), - lists, line breaks.
+     */
+    markdownToHtml(text) {
+      const lines = text.split("\n");
+      const out = [];
+      let inList = false;
+      for (const line of lines) {
+        const listMatch = line.match(/^[-*]\s+(.+)/);
+        if (listMatch) {
+          if (!inList) {
+            out.push("<ul>");
+            inList = true;
+          }
+          out.push(`<li>${this.inlineMarkdown(listMatch[1])}</li>`);
+        } else {
+          if (inList) {
+            out.push("</ul>");
+            inList = false;
+          }
+          out.push(this.inlineMarkdown(line));
+        }
+      }
+      if (inList) out.push("</ul>");
+      return out.join("\n").replace(/<\/ul>\n/g, "</ul>").replace(/\n<ul>/g, "<ul>").replace(/\n/g, "<br>");
+    }
+    inlineMarkdown(text) {
+      return text.replace(/`([^`]+)`/g, '<code class="tmrg-code">$1</code>').replace(/\*\*(.*?)\*\*/g, "<b>$1</b>").replace(/\*([^*]+)\*/g, "<em>$1</em>").replace(
+        /\[([^\]]+)\]\(([^)]+)\)/g,
+        '<a href="$2" target="_blank" rel="noopener">$1</a>'
+      );
     }
     renderFollowUps(followUps) {
       if (!this.followupsEl || followUps.length === 0) return;
@@ -1084,10 +1259,72 @@ var TMRGuide = function(exports) {
         this.followupsEl.appendChild(chip);
       }
     }
+    renderSources(sources) {
+      if (!this.sourcesEl || sources.length === 0) return;
+      this.sourcesEl.style.display = "block";
+      this.sourcesEl.innerHTML = "";
+      const label = document.createElement("p");
+      label.className = "tmrg-sources-label";
+      label.textContent = "Sources";
+      this.sourcesEl.appendChild(label);
+      for (const src of sources) {
+        const link = document.createElement("a");
+        link.className = "tmrg-source-link";
+        link.href = src.url;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = src.title;
+        this.sourcesEl.appendChild(link);
+      }
+    }
+    clearSources() {
+      if (!this.sourcesEl) return;
+      this.sourcesEl.style.display = "none";
+      this.sourcesEl.innerHTML = "";
+    }
+    renderFeedback() {
+      if (!this.feedbackEl) return;
+      this.feedbackEl.style.display = "flex";
+      this.feedbackEl.innerHTML = "";
+      const label = document.createElement("span");
+      label.className = "tmrg-feedback-label";
+      label.textContent = "Helpful?";
+      this.feedbackEl.appendChild(label);
+      const thumbUp = document.createElement("button");
+      thumbUp.className = "tmrg-feedback-btn";
+      thumbUp.title = "Yes, helpful";
+      thumbUp.textContent = "👍";
+      thumbUp.addEventListener("click", () => {
+        var _a;
+        (_a = this.onFeedback) == null ? void 0 : _a.call(this, "up", this.lastQuestion);
+        if (this.feedbackEl) {
+          this.feedbackEl.innerHTML = '<span class="tmrg-feedback-done">Thanks! 👍</span>';
+        }
+      });
+      const thumbDown = document.createElement("button");
+      thumbDown.className = "tmrg-feedback-btn";
+      thumbDown.title = "Not helpful";
+      thumbDown.textContent = "👎";
+      thumbDown.addEventListener("click", () => {
+        var _a;
+        (_a = this.onFeedback) == null ? void 0 : _a.call(this, "down", this.lastQuestion);
+        if (this.feedbackEl) {
+          this.feedbackEl.innerHTML = `<span class="tmrg-feedback-done">Got it — I'll do better.</span>`;
+        }
+      });
+      this.feedbackEl.appendChild(thumbUp);
+      this.feedbackEl.appendChild(thumbDown);
+    }
+    clearFeedback() {
+      if (!this.feedbackEl) return;
+      this.feedbackEl.style.display = "none";
+      this.feedbackEl.innerHTML = "";
+    }
     submitInput() {
       var _a, _b;
       const text = (_a = this.inputEl) == null ? void 0 : _a.value.trim();
       if (!text) return;
+      this.lastQuestion = text;
       (_b = this.onAsk) == null ? void 0 : _b.call(this, text);
       this.inputEl.value = "";
       this.inputEl.style.height = "auto";
@@ -1095,6 +1332,7 @@ var TMRGuide = function(exports) {
     }
   }
   const FALLBACK_MSG = "I'm having trouble connecting right now. You can reach our support team via the chat bubble in the corner.";
+  const TIMEOUT_MS = 2e4;
   class AIManager {
     constructor(apiEndpoint, userId, emailId) {
       this.apiEndpoint = apiEndpoint;
@@ -1105,8 +1343,7 @@ var TMRGuide = function(exports) {
     }
     /**
      * Ask Maya a question.
-     * `context` should contain a `subscriptionContext` string key built by the
-     * host application (e.g. buildSystemContext() in tmr_platform).
+     * Automatically times out after 20 seconds and returns a friendly fallback.
      */
     async ask(message, context) {
       const history = this.history.slice(-12);
@@ -1118,20 +1355,30 @@ var TMRGuide = function(exports) {
         history,
         subscriptionContext: typeof context.subscriptionContext === "string" ? context.subscriptionContext : void 0
       };
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
       try {
         const res = await fetch(this.apiEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
+          body: JSON.stringify(body),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const replyText = data.response ?? data.message ?? "";
+        const followUps = Array.isArray(data.followUps) ? data.followUps : [];
+        const sources = Array.isArray(data.sources) ? data.sources : [];
         this.history.push({ role: "user", content: message });
         this.history.push({ role: "assistant", content: replyText });
-        return { message: replyText };
-      } catch {
-        return { message: FALLBACK_MSG };
+        return { message: replyText, followUps, sources };
+      } catch (err) {
+        clearTimeout(timeoutId);
+        const isTimeout = err instanceof DOMException && err.name === "AbortError";
+        return {
+          message: isTimeout ? "That took too long — please try again in a moment." : FALLBACK_MSG
+        };
       }
     }
     resetSession() {
@@ -1223,6 +1470,7 @@ var TMRGuide = function(exports) {
       this.toggleBtn = null;
       this.contextMenu = null;
       this.resizeHandler = null;
+      this.resizeDebounce = null;
       this.STORAGE_KEY = "tmr-guide-enabled";
     }
     // ─── Public API ─────────────────────────────────────────────────
@@ -1257,7 +1505,11 @@ var TMRGuide = function(exports) {
       this.bubble.init(
         root,
         (text) => this.ask(text),
-        () => this.hide()
+        () => this.hide(),
+        (rating, question) => {
+          var _a2, _b2;
+          return (_b2 = (_a2 = this.config) == null ? void 0 : _a2.onFeedback) == null ? void 0 : _b2.call(_a2, rating, question);
+        }
       );
       this.bubble.setRepositionFn(() => this.bubble.positionNear(this.charX, this.charY));
       this.ai = new AIManager(config.apiEndpoint, config.userId, config.emailId);
@@ -1271,7 +1523,10 @@ var TMRGuide = function(exports) {
           this.show(this.currentOptions);
         }
       });
-      this.resizeHandler = () => this.handleResize();
+      this.resizeHandler = () => {
+        if (this.resizeDebounce) clearTimeout(this.resizeDebounce);
+        this.resizeDebounce = setTimeout(() => this.handleResize(), 100);
+      };
       window.addEventListener("resize", this.resizeHandler, { passive: true });
     }
     show(options) {
@@ -1282,6 +1537,9 @@ var TMRGuide = function(exports) {
       if (!this.enabled) return;
       this.isVisible = true;
       const primaryColor = ((_c = this.config.theme) == null ? void 0 : _c.primaryColor) ?? "#ff6700";
+      if (options.target && !document.querySelector(options.target)) {
+        console.warn(`[tmr-guide] target "${options.target}" not found for step "${options.stepId}"`);
+      }
       const rect = options.target ? getRect(options.target) : null;
       const targetPos = rect ? computeCharacterPosition(rect, options.position ?? "right", this.charSize) : this.cornerPosition();
       const isAlreadyNear = Math.abs(this.charX - targetPos.x) < 4 && Math.abs(this.charY - targetPos.y) < 4;
@@ -1346,7 +1604,7 @@ var TMRGuide = function(exports) {
       this.bubble.showLoading();
       const response = await this.ai.ask(text, context);
       this.character.setState("talking");
-      this.bubble.showResponse(response.message, response.followUps ?? []);
+      this.bubble.showResponse(response.message, response.followUps ?? [], response.sources ?? []);
       setTimeout(() => this.character.setState("idle"), 1800);
     }
     /** Celebrate a milestone (character jumps, optional message in bubble) */
@@ -1393,6 +1651,10 @@ var TMRGuide = function(exports) {
     }
     destroy() {
       var _a, _b, _c, _d, _e;
+      if (this.resizeDebounce) {
+        clearTimeout(this.resizeDebounce);
+        this.resizeDebounce = null;
+      }
       if (this.resizeHandler) {
         window.removeEventListener("resize", this.resizeHandler);
         this.resizeHandler = null;

@@ -17,6 +17,7 @@ declare class TMRGuideSDK {
     private toggleBtn;
     private contextMenu;
     private resizeHandler;
+    private resizeDebounce;
     private readonly STORAGE_KEY;
     init(config: TMRGuideConfig): void;
     show(options: ShowOptions): void;

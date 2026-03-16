@@ -8,8 +8,7 @@ export declare class AIManager {
     constructor(apiEndpoint: string, userId?: string | undefined, emailId?: string | undefined);
     /**
      * Ask Maya a question.
-     * `context` should contain a `subscriptionContext` string key built by the
-     * host application (e.g. buildSystemContext() in tmr_platform).
+     * Automatically times out after 20 seconds and returns a friendly fallback.
      */
     ask(message: string, context: Record<string, unknown>): Promise<AIResponse>;
     resetSession(): void;

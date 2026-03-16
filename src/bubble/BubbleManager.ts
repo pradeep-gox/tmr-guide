@@ -9,25 +9,37 @@ const CHAR_SIZE = 72;
 
 export type BubbleOnAsk = (text: string) => void;
 export type BubbleOnDismiss = () => void;
+export type BubbleOnFeedback = (rating: "up" | "down", question: string) => void;
 
 export class BubbleManager {
   private bubble: HTMLElement | null = null;
   private scrollEl: HTMLElement | null = null;
   private textEl: HTMLElement | null = null;
   private followupsEl: HTMLElement | null = null;
+  private feedbackEl: HTMLElement | null = null;
+  private sourcesEl: HTMLElement | null = null;
   private inputRow: HTMLElement | null = null;
   private inputEl: HTMLTextAreaElement | null = null;
   private typingEl: HTMLElement | null = null;
   private typeTimer: ReturnType<typeof setTimeout> | null = null;
   private onAsk: BubbleOnAsk | null = null;
   private onDismiss: BubbleOnDismiss | null = null;
+  private onFeedback: BubbleOnFeedback | null = null;
   /** Called after typewriter finishes so the host can re-clamp position */
   private repositionFn: (() => void) | null = null;
+  /** Last user question — stored so feedback can report it */
+  private lastQuestion = "";
 
-  init(root: HTMLElement, onAsk: BubbleOnAsk, onDismiss: BubbleOnDismiss): void {
+  init(
+    root: HTMLElement,
+    onAsk: BubbleOnAsk,
+    onDismiss: BubbleOnDismiss,
+    onFeedback?: BubbleOnFeedback,
+  ): void {
     injectCSS("tmrg-bubble-css", BUBBLE_CSS);
     this.onAsk = onAsk;
     this.onDismiss = onDismiss;
+    this.onFeedback = onFeedback ?? null;
 
     const bubble = document.createElement("div");
     bubble.className = "tmrg-bubble";
@@ -53,7 +65,7 @@ export class BubbleManager {
     scrollEl.appendChild(textEl);
     this.textEl = textEl;
 
-    // Typing indicator (shown while AI loading, inside scroll area)
+    // Typing indicator (inside scroll area)
     const typingEl = document.createElement("div");
     typingEl.className = "tmrg-typing";
     typingEl.innerHTML = "<span></span><span></span><span></span>";
@@ -61,13 +73,27 @@ export class BubbleManager {
     scrollEl.appendChild(typingEl);
     this.typingEl = typingEl;
 
-    // Follow-up chips (outside scroll, always visible at bottom)
+    // Source citations (outside scroll, pinned below text)
+    const sourcesEl = document.createElement("div");
+    sourcesEl.className = "tmrg-sources";
+    sourcesEl.style.display = "none";
+    bubble.appendChild(sourcesEl);
+    this.sourcesEl = sourcesEl;
+
+    // Feedback row (outside scroll, shown after AI responses)
+    const feedbackEl = document.createElement("div");
+    feedbackEl.className = "tmrg-feedback";
+    feedbackEl.style.display = "none";
+    bubble.appendChild(feedbackEl);
+    this.feedbackEl = feedbackEl;
+
+    // Follow-up chips (outside scroll)
     const followupsEl = document.createElement("div");
     followupsEl.className = "tmrg-followups";
     bubble.appendChild(followupsEl);
     this.followupsEl = followupsEl;
 
-    // Q&A input row (outside scroll, always visible at bottom)
+    // Q&A input row (outside scroll)
     const inputRow = document.createElement("div");
     inputRow.className = "tmrg-bubble-input-row";
     inputRow.style.display = "none";
@@ -83,7 +109,6 @@ export class BubbleManager {
       }
     });
     input.addEventListener("input", () => {
-      // Auto-grow
       input.style.height = "auto";
       input.style.height = `${Math.min(input.scrollHeight, 80)}px`;
       sendBtn.disabled = input.value.trim().length === 0;
@@ -105,18 +130,12 @@ export class BubbleManager {
     this.bubble = bubble;
   }
 
-  /**
-   * Register a callback invoked after the typewriter finishes.
-   * Use this to re-clamp the bubble position once its final height is known.
-   */
   setRepositionFn(fn: () => void): void {
     this.repositionFn = fn;
   }
 
   /**
    * Position the bubble so its tail aligns near the character's mouth.
-   * charY is the character's top edge; mouthOffsetY is how far down the
-   * mouth sits within the character (default: ~42% from top — mouth y=30 of 72 viewBox).
    */
   positionNear(charX: number, charY: number, mouthOffsetY = CHAR_SIZE * 0.42): void {
     if (!this.bubble) return;
@@ -125,7 +144,7 @@ export class BubbleManager {
 
     const bh = this.bubble.offsetHeight;
     const vh = window.innerHeight;
-    const mouthY = charY + mouthOffsetY; // absolute Y of the mouth
+    const mouthY = charY + mouthOffsetY;
 
     let left: number;
     if (side === "right") {
@@ -134,12 +153,8 @@ export class BubbleManager {
       left = charX - BUBBLE_WIDTH - 12;
     }
 
-    // Align bubble so the tail (near bottom of bubble) points at the mouth.
-    // Tail is anchored at bottom: 18px from the bubble bottom edge.
-    const TAIL_BOTTOM_OFFSET = 18 + 7; // bottom CSS value + half tail height
+    const TAIL_BOTTOM_OFFSET = 18 + 7;
     let top = mouthY - (bh - TAIL_BOTTOM_OFFSET);
-
-    // Clamp within viewport
     top = Math.max(12, Math.min(vh - bh - 12, top));
 
     this.bubble.style.left = `${left}px`;
@@ -151,13 +166,13 @@ export class BubbleManager {
     this.clearTypewriter();
     this.typingEl!.style.display = "none";
     this.followupsEl!.innerHTML = "";
+    this.clearFeedback();
+    this.clearSources();
     this.inputRow!.style.display = showInput ? "flex" : "none";
 
     this.typeText(message, () => {
       this.renderFollowUps(followUps);
-      // Re-clamp position now that we know the final height
       this.repositionFn?.();
-      // Scroll to top so user reads from the beginning
       if (this.scrollEl) this.scrollEl.scrollTop = 0;
     });
 
@@ -169,18 +184,27 @@ export class BubbleManager {
     this.clearTypewriter();
     this.textEl!.innerHTML = "";
     this.followupsEl!.innerHTML = "";
+    this.clearFeedback();
+    this.clearSources();
     this.typingEl!.style.display = "flex";
     this.bubble.classList.add("visible");
   }
 
-  showResponse(message: string, followUps: string[] = []): void {
+  showResponse(
+    message: string,
+    followUps: string[] = [],
+    sources: { title: string; url: string }[] = [],
+  ): void {
     if (!this.bubble) return;
     this.typingEl!.style.display = "none";
+    this.clearFeedback();
+    this.clearSources();
+
     this.typeText(message, () => {
       this.renderFollowUps(followUps);
-      // Re-clamp position now that we know the final height
+      this.renderSources(sources);
+      this.renderFeedback();
       this.repositionFn?.();
-      // Scroll to top so user reads from the beginning
       if (this.scrollEl) this.scrollEl.scrollTop = 0;
     });
   }
@@ -198,6 +222,8 @@ export class BubbleManager {
     this.textEl = null;
     this.typingEl = null;
     this.followupsEl = null;
+    this.feedbackEl = null;
+    this.sourcesEl = null;
     this.inputRow = null;
     this.inputEl = null;
     this.repositionFn = null;
@@ -207,7 +233,7 @@ export class BubbleManager {
 
   private typeText(text: string, onDone?: () => void): void {
     if (!this.textEl) return;
-    const html = this.markdownLite(text);
+    const html = this.markdownToHtml(text);
 
     if (prefersReducedMotion()) {
       this.textEl.innerHTML = html;
@@ -215,8 +241,13 @@ export class BubbleManager {
       return;
     }
 
-    // Typewriter over plain text, then inject HTML at end
-    const plain = text.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+    // Strip markdown for typewriter plain-text pass, then swap to rich HTML
+    const plain = text
+      .replace(/\*\*(.*?)\*\*/g, "$1")
+      .replace(/\*(.*?)\*/g, "$1")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/^[-*]\s+/gm, "• ");
     let i = 0;
     this.textEl.textContent = "";
 
@@ -225,7 +256,6 @@ export class BubbleManager {
         this.textEl!.textContent += plain[i++];
         this.typeTimer = setTimeout(tick, TYPEWRITER_INTERVAL);
       } else {
-        // Replace plain text with rich HTML once done
         this.textEl!.innerHTML = html;
         onDone?.();
       }
@@ -240,11 +270,47 @@ export class BubbleManager {
     }
   }
 
-  private markdownLite(text: string): string {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+  /**
+   * Lightweight Markdown → HTML converter.
+   * Supports: **bold**, *italic*, `code`, [links](url), - lists, line breaks.
+   */
+  private markdownToHtml(text: string): string {
+    const lines = text.split("\n");
+    const out: string[] = [];
+    let inList = false;
+
+    for (const line of lines) {
+      const listMatch = line.match(/^[-*]\s+(.+)/);
+      if (listMatch) {
+        if (!inList) { out.push("<ul>"); inList = true; }
+        out.push(`<li>${this.inlineMarkdown(listMatch[1])}</li>`);
+      } else {
+        if (inList) { out.push("</ul>"); inList = false; }
+        out.push(this.inlineMarkdown(line));
+      }
+    }
+    if (inList) out.push("</ul>");
+
+    // Join lines: don't put <br> around list tags
+    return out.join("\n")
+      .replace(/<\/ul>\n/g, "</ul>")
+      .replace(/\n<ul>/g, "<ul>")
       .replace(/\n/g, "<br>");
+  }
+
+  private inlineMarkdown(text: string): string {
+    return text
+      // Inline code (before bold/italic so backticks aren't processed further)
+      .replace(/`([^`]+)`/g, '<code class="tmrg-code">$1</code>')
+      // Bold
+      .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
+      // Italic (avoid matching inside already-replaced bold)
+      .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+      // Links
+      .replace(
+        /\[([^\]]+)\]\(([^)]+)\)/g,
+        '<a href="$2" target="_blank" rel="noopener">$1</a>',
+      );
   }
 
   private renderFollowUps(followUps: string[]): void {
@@ -265,9 +331,81 @@ export class BubbleManager {
     }
   }
 
+  private renderSources(sources: { title: string; url: string }[]): void {
+    if (!this.sourcesEl || sources.length === 0) return;
+    this.sourcesEl.style.display = "block";
+    this.sourcesEl.innerHTML = "";
+
+    const label = document.createElement("p");
+    label.className = "tmrg-sources-label";
+    label.textContent = "Sources";
+    this.sourcesEl.appendChild(label);
+
+    for (const src of sources) {
+      const link = document.createElement("a");
+      link.className = "tmrg-source-link";
+      link.href = src.url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.textContent = src.title;
+      this.sourcesEl.appendChild(link);
+    }
+  }
+
+  private clearSources(): void {
+    if (!this.sourcesEl) return;
+    this.sourcesEl.style.display = "none";
+    this.sourcesEl.innerHTML = "";
+  }
+
+  private renderFeedback(): void {
+    if (!this.feedbackEl) return;
+    this.feedbackEl.style.display = "flex";
+    this.feedbackEl.innerHTML = "";
+
+    const label = document.createElement("span");
+    label.className = "tmrg-feedback-label";
+    label.textContent = "Helpful?";
+    this.feedbackEl.appendChild(label);
+
+    const thumbUp = document.createElement("button");
+    thumbUp.className = "tmrg-feedback-btn";
+    thumbUp.title = "Yes, helpful";
+    thumbUp.textContent = "👍";
+    thumbUp.addEventListener("click", () => {
+      this.onFeedback?.("up", this.lastQuestion);
+      if (this.feedbackEl) {
+        this.feedbackEl.innerHTML =
+          '<span class="tmrg-feedback-done">Thanks! 👍</span>';
+      }
+    });
+
+    const thumbDown = document.createElement("button");
+    thumbDown.className = "tmrg-feedback-btn";
+    thumbDown.title = "Not helpful";
+    thumbDown.textContent = "👎";
+    thumbDown.addEventListener("click", () => {
+      this.onFeedback?.("down", this.lastQuestion);
+      if (this.feedbackEl) {
+        this.feedbackEl.innerHTML =
+          '<span class="tmrg-feedback-done">Got it — I\'ll do better.</span>';
+      }
+    });
+
+    this.feedbackEl.appendChild(thumbUp);
+    this.feedbackEl.appendChild(thumbDown);
+  }
+
+  private clearFeedback(): void {
+    if (!this.feedbackEl) return;
+    this.feedbackEl.style.display = "none";
+    this.feedbackEl.innerHTML = "";
+  }
+
   private submitInput(): void {
     const text = this.inputEl?.value.trim();
     if (!text) return;
+    this.lastQuestion = text;
     this.onAsk?.(text);
     this.inputEl!.value = "";
     this.inputEl!.style.height = "auto";

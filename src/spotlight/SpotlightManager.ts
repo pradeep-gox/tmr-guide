@@ -123,6 +123,12 @@ export class SpotlightManager {
     this.clearFadeTimer();
     this.currentTarget = targetSelector;
 
+    // Scroll the target element into view if it is off-screen
+    const targetEl = document.querySelector(targetSelector);
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+    }
+
     const mode: HighlightMode = opts.mode ?? "persistent";
     const color = opts.color ?? "#ff6700";
     const width = opts.ringWidth ?? 3;

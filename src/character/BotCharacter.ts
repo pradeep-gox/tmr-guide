@@ -8,8 +8,12 @@ export class BotCharacter implements CharacterRenderer {
   private inner: HTMLElement | null = null;
   private svg: SVGSVGElement | null = null;
   private mouthEl: SVGRectElement | null = null;
-  private eyeL: SVGCircleElement | null = null;
-  private eyeR: SVGCircleElement | null = null;
+  // Eyes are ellipses so we can animate ry for blinking
+  private eyeL: SVGEllipseElement | null = null;
+  private eyeR: SVGEllipseElement | null = null;
+  private eyeShineL: SVGCircleElement | null = null;
+  private eyeShineR: SVGCircleElement | null = null;
+  private blinkTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private readonly size: number = 72, private readonly primaryColor: string = "#ff6700") {}
 
@@ -25,6 +29,9 @@ export class BotCharacter implements CharacterRenderer {
 
     container.appendChild(inner);
     this.inner = inner;
+
+    // Start random blink loop
+    this.scheduleBlink();
   }
 
   setState(state: CharacterState): void {
@@ -52,13 +59,48 @@ export class BotCharacter implements CharacterRenderer {
 
   destroy(): void {
     this.stopMouthAnim();
+    if (this.blinkTimer) {
+      clearTimeout(this.blinkTimer);
+      this.blinkTimer = null;
+    }
     this.container = null;
     this.inner = null;
     this.svg = null;
     this.mouthEl = null;
+    this.eyeL = null;
+    this.eyeR = null;
   }
 
   // ─── private ───────────────────────────────────────────────────
+
+  /** Schedule the next blink at a random interval (2.5s – 6s). */
+  private scheduleBlink(): void {
+    const delay = 2500 + Math.random() * 3500;
+    this.blinkTimer = setTimeout(() => {
+      this.blink();
+      this.scheduleBlink();
+    }, delay);
+  }
+
+  /**
+   * Quick blink: squish ry to near-zero for 120ms then restore.
+   * Also hide the shine dot so it doesn't float in mid-air.
+   */
+  private blink(): void {
+    if (!this.eyeL || !this.eyeR) return;
+    const BLINK_DUR = 120;
+    this.eyeL.setAttribute("ry", "0.6");
+    this.eyeR.setAttribute("ry", "0.6");
+    if (this.eyeShineL) this.eyeShineL.style.opacity = "0";
+    if (this.eyeShineR) this.eyeShineR.style.opacity = "0";
+
+    setTimeout(() => {
+      if (this.eyeL) this.eyeL.setAttribute("ry", "4");
+      if (this.eyeR) this.eyeR.setAttribute("ry", "4");
+      if (this.eyeShineL) this.eyeShineL.style.opacity = "1";
+      if (this.eyeShineR) this.eyeShineR.style.opacity = "1";
+    }, BLINK_DUR);
+  }
 
   private buildSVG(): SVGSVGElement {
     const s = this.size;
@@ -118,27 +160,33 @@ export class BotCharacter implements CharacterRenderer {
     antennaBall.setAttribute("fill", c);
     svg.appendChild(antennaBall);
 
-    // Eyes
-    const eyeL = document.createElementNS(ns, "circle");
-    eyeL.setAttribute("cx", "29"); eyeL.setAttribute("cy", "22"); eyeL.setAttribute("r", "4");
+    // Eyes — ellipses so ry can be animated for blinking
+    const eyeL = document.createElementNS(ns, "ellipse");
+    eyeL.setAttribute("cx", "29"); eyeL.setAttribute("cy", "22");
+    eyeL.setAttribute("rx", "4"); eyeL.setAttribute("ry", "4");
     eyeL.setAttribute("fill", c);
     svg.appendChild(eyeL);
     this.eyeL = eyeL;
 
-    const eyeR = document.createElementNS(ns, "circle");
-    eyeR.setAttribute("cx", "43"); eyeR.setAttribute("cy", "22"); eyeR.setAttribute("r", "4");
+    const eyeR = document.createElementNS(ns, "ellipse");
+    eyeR.setAttribute("cx", "43"); eyeR.setAttribute("cy", "22");
+    eyeR.setAttribute("rx", "4"); eyeR.setAttribute("ry", "4");
     eyeR.setAttribute("fill", c);
     svg.appendChild(eyeR);
     this.eyeR = eyeR;
 
-    // Eye shine
-    [eyeL, eyeR].forEach((eye, i) => {
-      const shine = document.createElementNS(ns, "circle");
-      const cx = i === 0 ? "31" : "45";
-      shine.setAttribute("cx", cx); shine.setAttribute("cy", "20"); shine.setAttribute("r", "1.5");
-      shine.setAttribute("fill", "white");
-      svg.appendChild(shine);
-    });
+    // Eye shines
+    const shineL = document.createElementNS(ns, "circle");
+    shineL.setAttribute("cx", "31"); shineL.setAttribute("cy", "20"); shineL.setAttribute("r", "1.5");
+    shineL.setAttribute("fill", "white");
+    svg.appendChild(shineL);
+    this.eyeShineL = shineL;
+
+    const shineR = document.createElementNS(ns, "circle");
+    shineR.setAttribute("cx", "45"); shineR.setAttribute("cy", "20"); shineR.setAttribute("r", "1.5");
+    shineR.setAttribute("fill", "white");
+    svg.appendChild(shineR);
+    this.eyeShineR = shineR;
 
     // Mouth
     const mouth = document.createElementNS(ns, "rect");

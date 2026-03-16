@@ -19,6 +19,8 @@ export const BUBBLE_CSS = `
   transform-origin: bottom left;
   opacity: 0;
   transform: scale(0.85) translateY(8px);
+  /* Force light mode — prevents Arc/Chrome dark-mode inversion */
+  color-scheme: light;
 }
 .tmrg-bubble.visible {
   opacity: 1;
@@ -85,7 +87,6 @@ export const BUBBLE_CSS = `
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  /* subtle scrollbar */
   scrollbar-width: thin;
   scrollbar-color: #e5e7eb transparent;
 }
@@ -102,8 +103,30 @@ export const BUBBLE_CSS = `
   padding-right: 12px;
   min-height: 20px;
 }
-.tmrg-bubble-text b { font-weight: 600; }
-.tmrg-bubble-text a { color: #ff6700; text-decoration: underline; }
+.tmrg-bubble-text b  { font-weight: 600; color: #111827; }
+.tmrg-bubble-text em { font-style: italic; }
+.tmrg-bubble-text a  { color: #ff6700; text-decoration: underline; }
+
+/* Inline code */
+.tmrg-bubble-text .tmrg-code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+  background: #f3f4f6;
+  color: #374151;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+/* Unordered list inside bubble text */
+.tmrg-bubble-text ul {
+  margin: 4px 0;
+  padding-left: 16px;
+  list-style: disc;
+}
+.tmrg-bubble-text li {
+  margin: 2px 0;
+  line-height: 1.5;
+}
 
 /* Typing dots */
 .tmrg-typing {
@@ -127,6 +150,62 @@ export const BUBBLE_CSS = `
 @media (prefers-reduced-motion: reduce) {
   .tmrg-typing span { animation: none; }
   .tmrg-bubble { transition: opacity 0.15s ease !important; }
+}
+
+/* Source citations */
+.tmrg-sources {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+.tmrg-sources-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 4px;
+}
+.tmrg-source-link {
+  display: block;
+  font-size: 11.5px;
+  color: #ff6700;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.tmrg-source-link:hover { text-decoration: underline; }
+
+/* Feedback row */
+.tmrg-feedback {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.tmrg-feedback-label {
+  font-size: 10.5px;
+  color: #9ca3af;
+  margin-right: 2px;
+}
+.tmrg-feedback-btn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1.4;
+  transition: background 0.12s, border-color 0.12s;
+}
+.tmrg-feedback-btn:hover { background: #f9fafb; border-color: #d1d5db; }
+.tmrg-feedback-done {
+  font-size: 11px;
+  color: #6b7280;
 }
 
 /* Q&A input area */
