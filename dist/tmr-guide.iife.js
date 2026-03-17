@@ -1,6 +1,6 @@
 var TMRGuide = function(exports) {
   "use strict";
-  const SPARKLE_COLORS = ["#ff6700", "#ffd700", "#ff4fa3", "#4fc3f7"];
+  const SPARKLE_COLORS$6 = ["#ff6700", "#ffd700", "#ff4fa3", "#4fc3f7"];
   class BotCharacter {
     constructor(size = 72, primaryColor = "#ff6700") {
       this.size = size;
@@ -253,9 +253,1148 @@ var TMRGuide = function(exports) {
           const dist = 28 + Math.random() * 16;
           dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
           dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
-          dot.style.backgroundColor = SPARKLE_COLORS[i % SPARKLE_COLORS.length];
+          dot.style.backgroundColor = SPARKLE_COLORS$6[i % SPARKLE_COLORS$6.length];
           dot.style.top = "30px";
           dot.style.left = "33px";
+          this.inner.appendChild(dot);
+          setTimeout(() => dot.remove(), 750);
+        }, i * 60);
+      }
+    }
+  }
+  const SPARKLE_COLORS$5 = ["#ff6700", "#ffd700", "#ff4fa3", "#4fc3f7"];
+  class OwlCharacter {
+    constructor(size = 72, primaryColor = "#ff6700") {
+      this.size = size;
+      this.primaryColor = primaryColor;
+      this.container = null;
+      this.inner = null;
+      this.svg = null;
+      this.mouthEl = null;
+      this.eyeL = null;
+      this.eyeR = null;
+      this.eyeShineL = null;
+      this.eyeShineR = null;
+      this.blinkTimer = null;
+      this.mouthTimer = null;
+      this.mouthOpen = false;
+    }
+    mount(container) {
+      this.container = container;
+      const inner = document.createElement("div");
+      inner.className = "tmrg-char-inner";
+      inner.style.cssText = `display:inline-block;position:relative;`;
+      const svg = this.buildSVG();
+      inner.appendChild(svg);
+      container.appendChild(inner);
+      this.inner = inner;
+      this.scheduleBlink();
+    }
+    setState(state) {
+      var _a, _b, _c, _d;
+      if (!this.container) return;
+      this.container.dataset.state = state;
+      if (state === "thinking") {
+        (_a = this.eyeL) == null ? void 0 : _a.setAttribute("cy", "22");
+        (_b = this.eyeR) == null ? void 0 : _b.setAttribute("cy", "22");
+      } else {
+        (_c = this.eyeL) == null ? void 0 : _c.setAttribute("cy", "25");
+        (_d = this.eyeR) == null ? void 0 : _d.setAttribute("cy", "25");
+      }
+      if (state === "talking") {
+        this.startMouthAnim();
+      } else {
+        this.stopMouthAnim();
+      }
+      if (state === "celebrating") {
+        this.spawnSparkles();
+      }
+    }
+    destroy() {
+      this.stopMouthAnim();
+      if (this.blinkTimer) {
+        clearTimeout(this.blinkTimer);
+        this.blinkTimer = null;
+      }
+      this.container = null;
+      this.inner = null;
+      this.svg = null;
+      this.mouthEl = null;
+      this.eyeL = null;
+      this.eyeR = null;
+    }
+    // ─── private ───────────────────────────────────────────────────
+    scheduleBlink() {
+      const delay = 2500 + Math.random() * 3500;
+      this.blinkTimer = setTimeout(() => {
+        this.blink();
+        this.scheduleBlink();
+      }, delay);
+    }
+    blink() {
+      if (!this.eyeL || !this.eyeR) return;
+      const BLINK_DUR = 120;
+      this.eyeL.setAttribute("ry", "0.6");
+      this.eyeR.setAttribute("ry", "0.6");
+      if (this.eyeShineL) this.eyeShineL.style.opacity = "0";
+      if (this.eyeShineR) this.eyeShineR.style.opacity = "0";
+      setTimeout(() => {
+        if (this.eyeL) this.eyeL.setAttribute("ry", "6.5");
+        if (this.eyeR) this.eyeR.setAttribute("ry", "6.5");
+        if (this.eyeShineL) this.eyeShineL.style.opacity = "1";
+        if (this.eyeShineR) this.eyeShineR.style.opacity = "1";
+      }, BLINK_DUR);
+    }
+    buildSVG() {
+      const s = this.size;
+      const c = this.primaryColor;
+      const ns = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(ns, "svg");
+      svg.setAttribute("width", String(s));
+      svg.setAttribute("height", String(s));
+      svg.setAttribute("viewBox", "0 0 72 72");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("xmlns", ns);
+      this.svg = svg;
+      const shadow = document.createElementNS(ns, "ellipse");
+      shadow.setAttribute("cx", "36");
+      shadow.setAttribute("cy", "70");
+      shadow.setAttribute("rx", "18");
+      shadow.setAttribute("ry", "3");
+      shadow.setAttribute("fill", "rgba(0,0,0,0.12)");
+      svg.appendChild(shadow);
+      const wingL = document.createElementNS(ns, "ellipse");
+      wingL.setAttribute("cx", "15");
+      wingL.setAttribute("cy", "50");
+      wingL.setAttribute("rx", "9");
+      wingL.setAttribute("ry", "14");
+      wingL.setAttribute("fill", "#374151");
+      svg.appendChild(wingL);
+      const wingR = document.createElementNS(ns, "ellipse");
+      wingR.setAttribute("cx", "57");
+      wingR.setAttribute("cy", "50");
+      wingR.setAttribute("rx", "9");
+      wingR.setAttribute("ry", "14");
+      wingR.setAttribute("fill", "#374151");
+      svg.appendChild(wingR);
+      const body = document.createElementNS(ns, "ellipse");
+      body.setAttribute("cx", "36");
+      body.setAttribute("cy", "54");
+      body.setAttribute("rx", "18");
+      body.setAttribute("ry", "16");
+      body.setAttribute("fill", "#1f2937");
+      svg.appendChild(body);
+      const belly = document.createElementNS(ns, "ellipse");
+      belly.setAttribute("cx", "36");
+      belly.setAttribute("cy", "57");
+      belly.setAttribute("rx", "11");
+      belly.setAttribute("ry", "12");
+      belly.setAttribute("fill", "#374151");
+      svg.appendChild(belly);
+      const head = document.createElementNS(ns, "circle");
+      head.setAttribute("cx", "36");
+      head.setAttribute("cy", "26");
+      head.setAttribute("r", "18");
+      head.setAttribute("fill", "#1f2937");
+      svg.appendChild(head);
+      const tuftL = document.createElementNS(ns, "polygon");
+      tuftL.setAttribute("points", "18,14 22,4 27,14");
+      tuftL.setAttribute("fill", c);
+      svg.appendChild(tuftL);
+      const tuftR = document.createElementNS(ns, "polygon");
+      tuftR.setAttribute("points", "45,14 50,4 54,14");
+      tuftR.setAttribute("fill", c);
+      svg.appendChild(tuftR);
+      const scleraL = document.createElementNS(ns, "circle");
+      scleraL.setAttribute("cx", "27");
+      scleraL.setAttribute("cy", "25");
+      scleraL.setAttribute("r", "8.5");
+      scleraL.setAttribute("fill", "white");
+      svg.appendChild(scleraL);
+      const scleraR = document.createElementNS(ns, "circle");
+      scleraR.setAttribute("cx", "45");
+      scleraR.setAttribute("cy", "25");
+      scleraR.setAttribute("r", "8.5");
+      scleraR.setAttribute("fill", "white");
+      svg.appendChild(scleraR);
+      const eyeL = document.createElementNS(ns, "ellipse");
+      eyeL.setAttribute("cx", "27");
+      eyeL.setAttribute("cy", "25");
+      eyeL.setAttribute("rx", "6.5");
+      eyeL.setAttribute("ry", "6.5");
+      eyeL.setAttribute("fill", c);
+      svg.appendChild(eyeL);
+      this.eyeL = eyeL;
+      const eyeR = document.createElementNS(ns, "ellipse");
+      eyeR.setAttribute("cx", "45");
+      eyeR.setAttribute("cy", "25");
+      eyeR.setAttribute("rx", "6.5");
+      eyeR.setAttribute("ry", "6.5");
+      eyeR.setAttribute("fill", c);
+      svg.appendChild(eyeR);
+      this.eyeR = eyeR;
+      const pupilL = document.createElementNS(ns, "circle");
+      pupilL.setAttribute("cx", "27");
+      pupilL.setAttribute("cy", "25");
+      pupilL.setAttribute("r", "3");
+      pupilL.setAttribute("fill", "#111827");
+      svg.appendChild(pupilL);
+      const pupilR = document.createElementNS(ns, "circle");
+      pupilR.setAttribute("cx", "45");
+      pupilR.setAttribute("cy", "25");
+      pupilR.setAttribute("r", "3");
+      pupilR.setAttribute("fill", "#111827");
+      svg.appendChild(pupilR);
+      const shineL = document.createElementNS(ns, "circle");
+      shineL.setAttribute("cx", "29");
+      shineL.setAttribute("cy", "23");
+      shineL.setAttribute("r", "1.5");
+      shineL.setAttribute("fill", "white");
+      svg.appendChild(shineL);
+      this.eyeShineL = shineL;
+      const shineR = document.createElementNS(ns, "circle");
+      shineR.setAttribute("cx", "47");
+      shineR.setAttribute("cy", "23");
+      shineR.setAttribute("r", "1.5");
+      shineR.setAttribute("fill", "white");
+      svg.appendChild(shineR);
+      this.eyeShineR = shineR;
+      const mouth = document.createElementNS(ns, "rect");
+      mouth.setAttribute("x", "32");
+      mouth.setAttribute("y", "32");
+      mouth.setAttribute("width", "8");
+      mouth.setAttribute("height", "5");
+      mouth.setAttribute("rx", "2.5");
+      mouth.setAttribute("fill", "#f59e0b");
+      svg.appendChild(mouth);
+      this.mouthEl = mouth;
+      const footL = document.createElementNS(ns, "rect");
+      footL.setAttribute("x", "25");
+      footL.setAttribute("y", "67");
+      footL.setAttribute("width", "9");
+      footL.setAttribute("height", "4");
+      footL.setAttribute("rx", "2");
+      footL.setAttribute("fill", c);
+      svg.appendChild(footL);
+      const footR = document.createElementNS(ns, "rect");
+      footR.setAttribute("x", "38");
+      footR.setAttribute("y", "67");
+      footR.setAttribute("width", "9");
+      footR.setAttribute("height", "4");
+      footR.setAttribute("rx", "2");
+      footR.setAttribute("fill", c);
+      svg.appendChild(footR);
+      return svg;
+    }
+    startMouthAnim() {
+      if (this.mouthTimer) return;
+      this.mouthTimer = setInterval(() => {
+        if (!this.mouthEl) return;
+        this.mouthOpen = !this.mouthOpen;
+        this.mouthEl.setAttribute("height", this.mouthOpen ? "8" : "5");
+        this.mouthEl.setAttribute("y", this.mouthOpen ? "30" : "32");
+      }, 200);
+    }
+    stopMouthAnim() {
+      if (this.mouthTimer) {
+        clearInterval(this.mouthTimer);
+        this.mouthTimer = null;
+      }
+      if (this.mouthEl) {
+        this.mouthEl.setAttribute("height", "5");
+        this.mouthEl.setAttribute("y", "32");
+      }
+      this.mouthOpen = false;
+    }
+    spawnSparkles() {
+      if (!this.inner) return;
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          const dot = document.createElement("div");
+          dot.className = "tmrg-sparkle";
+          const angle = i / 6 * 360;
+          const rad = angle * Math.PI / 180;
+          const dist = 28 + Math.random() * 16;
+          dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
+          dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
+          dot.style.backgroundColor = SPARKLE_COLORS$5[i % SPARKLE_COLORS$5.length];
+          dot.style.top = "20px";
+          dot.style.left = "28px";
+          this.inner.appendChild(dot);
+          setTimeout(() => dot.remove(), 750);
+        }, i * 60);
+      }
+    }
+  }
+  const SPARKLE_COLORS$4 = ["#ff6700", "#ffd700", "#ff4fa3", "#4fc3f7"];
+  class AstronautCharacter {
+    constructor(size = 72, primaryColor = "#ff6700") {
+      this.size = size;
+      this.primaryColor = primaryColor;
+      this.container = null;
+      this.inner = null;
+      this.svg = null;
+      this.mouthEl = null;
+      this.eyeL = null;
+      this.eyeR = null;
+      this.eyeShineL = null;
+      this.eyeShineR = null;
+      this.blinkTimer = null;
+      this.mouthTimer = null;
+      this.mouthOpen = false;
+    }
+    mount(container) {
+      this.container = container;
+      const inner = document.createElement("div");
+      inner.className = "tmrg-char-inner";
+      inner.style.cssText = `display:inline-block;position:relative;`;
+      inner.appendChild(this.buildSVG());
+      container.appendChild(inner);
+      this.inner = inner;
+      this.scheduleBlink();
+    }
+    setState(state) {
+      var _a, _b, _c, _d;
+      if (!this.container) return;
+      this.container.dataset.state = state;
+      if (state === "thinking") {
+        (_a = this.eyeL) == null ? void 0 : _a.setAttribute("cy", "24");
+        (_b = this.eyeR) == null ? void 0 : _b.setAttribute("cy", "24");
+      } else {
+        (_c = this.eyeL) == null ? void 0 : _c.setAttribute("cy", "27");
+        (_d = this.eyeR) == null ? void 0 : _d.setAttribute("cy", "27");
+      }
+      if (state === "talking") {
+        this.startMouthAnim();
+      } else {
+        this.stopMouthAnim();
+      }
+      if (state === "celebrating") this.spawnSparkles();
+    }
+    destroy() {
+      this.stopMouthAnim();
+      if (this.blinkTimer) {
+        clearTimeout(this.blinkTimer);
+        this.blinkTimer = null;
+      }
+      this.container = null;
+      this.inner = null;
+      this.svg = null;
+      this.mouthEl = null;
+      this.eyeL = null;
+      this.eyeR = null;
+    }
+    // ─── private ───────────────────────────────────────────────────
+    scheduleBlink() {
+      this.blinkTimer = setTimeout(() => {
+        this.blink();
+        this.scheduleBlink();
+      }, 2500 + Math.random() * 3500);
+    }
+    blink() {
+      if (!this.eyeL || !this.eyeR) return;
+      this.eyeL.setAttribute("ry", "0.6");
+      this.eyeR.setAttribute("ry", "0.6");
+      if (this.eyeShineL) this.eyeShineL.style.opacity = "0";
+      if (this.eyeShineR) this.eyeShineR.style.opacity = "0";
+      setTimeout(() => {
+        if (this.eyeL) this.eyeL.setAttribute("ry", "3");
+        if (this.eyeR) this.eyeR.setAttribute("ry", "3");
+        if (this.eyeShineL) this.eyeShineL.style.opacity = "1";
+        if (this.eyeShineR) this.eyeShineR.style.opacity = "1";
+      }, 120);
+    }
+    buildSVG() {
+      const s = this.size;
+      const c = this.primaryColor;
+      const ns = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(ns, "svg");
+      svg.setAttribute("width", String(s));
+      svg.setAttribute("height", String(s));
+      svg.setAttribute("viewBox", "0 0 72 72");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("xmlns", ns);
+      this.svg = svg;
+      const el = (tag, attrs) => {
+        const e = document.createElementNS(ns, tag);
+        for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+        return e;
+      };
+      svg.appendChild(el("ellipse", { cx: "36", cy: "70", rx: "16", ry: "3", fill: "rgba(0,0,0,0.12)" }));
+      svg.appendChild(el("rect", { x: "7", y: "36", width: "12", height: "22", rx: "6", fill: "#d1d5db" }));
+      svg.appendChild(el("rect", { x: "53", y: "36", width: "12", height: "22", rx: "6", fill: "#d1d5db" }));
+      svg.appendChild(el("rect", { x: "18", y: "38", width: "36", height: "30", rx: "10", fill: "#e5e7eb" }));
+      svg.appendChild(el("circle", { cx: "36", cy: "48", r: "5.5", fill: "none", stroke: c, "stroke-width": "1.5" }));
+      svg.appendChild(el("circle", { cx: "36", cy: "48", r: "2.5", fill: c, opacity: "0.6" }));
+      svg.appendChild(el("rect", { x: "22", y: "65", width: "11", height: "7", rx: "4", fill: "#d1d5db" }));
+      svg.appendChild(el("rect", { x: "39", y: "65", width: "11", height: "7", rx: "4", fill: "#d1d5db" }));
+      svg.appendChild(el("circle", { cx: "36", cy: "26", r: "18", fill: "#e5e7eb" }));
+      svg.appendChild(el("circle", { cx: "36", cy: "26", r: "17", fill: "none", stroke: "#d1d5db", "stroke-width": "1.5" }));
+      svg.appendChild(el("rect", { x: "34", y: "8", width: "4", height: "8", rx: "2", fill: "#9ca3af" }));
+      svg.appendChild(el("circle", { cx: "36", cy: "8", r: "3", fill: c }));
+      svg.appendChild(el("ellipse", { cx: "36", cy: "28", rx: "13", ry: "11", fill: "#1f2937" }));
+      svg.appendChild(el("ellipse", { cx: "27", cy: "21", rx: "4", ry: "2.5", fill: "rgba(255,255,255,0.18)", transform: "rotate(-15 27 21)" }));
+      const eyeL = el("ellipse", { cx: "29", cy: "27", rx: "3", ry: "3", fill: c });
+      svg.appendChild(eyeL);
+      this.eyeL = eyeL;
+      const eyeR = el("ellipse", { cx: "43", cy: "27", rx: "3", ry: "3", fill: c });
+      svg.appendChild(eyeR);
+      this.eyeR = eyeR;
+      const shineL = el("circle", { cx: "30.5", cy: "25.5", r: "1.2", fill: "white" });
+      svg.appendChild(shineL);
+      this.eyeShineL = shineL;
+      const shineR = el("circle", { cx: "44.5", cy: "25.5", r: "1.2", fill: "white" });
+      svg.appendChild(shineR);
+      this.eyeShineR = shineR;
+      const mouth = el("rect", { x: "31", y: "33", width: "10", height: "3", rx: "1.5", fill: c, opacity: "0.6" });
+      svg.appendChild(mouth);
+      this.mouthEl = mouth;
+      return svg;
+    }
+    startMouthAnim() {
+      if (this.mouthTimer) return;
+      this.mouthTimer = setInterval(() => {
+        if (!this.mouthEl) return;
+        this.mouthOpen = !this.mouthOpen;
+        this.mouthEl.setAttribute("height", this.mouthOpen ? "5" : "3");
+        this.mouthEl.setAttribute("y", this.mouthOpen ? "32" : "33");
+      }, 180);
+    }
+    stopMouthAnim() {
+      if (this.mouthTimer) {
+        clearInterval(this.mouthTimer);
+        this.mouthTimer = null;
+      }
+      if (this.mouthEl) {
+        this.mouthEl.setAttribute("height", "3");
+        this.mouthEl.setAttribute("y", "33");
+      }
+      this.mouthOpen = false;
+    }
+    spawnSparkles() {
+      if (!this.inner) return;
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          const dot = document.createElement("div");
+          dot.className = "tmrg-sparkle";
+          const rad = i / 6 * 360 * Math.PI / 180;
+          const dist = 28 + Math.random() * 16;
+          dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
+          dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
+          dot.style.backgroundColor = SPARKLE_COLORS$4[i % SPARKLE_COLORS$4.length];
+          dot.style.top = "20px";
+          dot.style.left = "30px";
+          this.inner.appendChild(dot);
+          setTimeout(() => dot.remove(), 750);
+        }, i * 60);
+      }
+    }
+  }
+  const SPARKLE_COLORS$3 = ["#ff6700", "#ffd700", "#ff4fa3", "#4fc3f7"];
+  class WizardCharacter {
+    constructor(size = 72, primaryColor = "#ff6700") {
+      this.size = size;
+      this.primaryColor = primaryColor;
+      this.container = null;
+      this.inner = null;
+      this.svg = null;
+      this.mouthEl = null;
+      this.eyeL = null;
+      this.eyeR = null;
+      this.eyeShineL = null;
+      this.eyeShineR = null;
+      this.blinkTimer = null;
+      this.mouthTimer = null;
+      this.mouthOpen = false;
+    }
+    mount(container) {
+      this.container = container;
+      const inner = document.createElement("div");
+      inner.className = "tmrg-char-inner";
+      inner.style.cssText = `display:inline-block;position:relative;`;
+      inner.appendChild(this.buildSVG());
+      container.appendChild(inner);
+      this.inner = inner;
+      this.scheduleBlink();
+    }
+    setState(state) {
+      var _a, _b, _c, _d;
+      if (!this.container) return;
+      this.container.dataset.state = state;
+      if (state === "thinking") {
+        (_a = this.eyeL) == null ? void 0 : _a.setAttribute("cy", "23");
+        (_b = this.eyeR) == null ? void 0 : _b.setAttribute("cy", "23");
+      } else {
+        (_c = this.eyeL) == null ? void 0 : _c.setAttribute("cy", "26");
+        (_d = this.eyeR) == null ? void 0 : _d.setAttribute("cy", "26");
+      }
+      if (state === "talking") {
+        this.startMouthAnim();
+      } else {
+        this.stopMouthAnim();
+      }
+      if (state === "celebrating") this.spawnSparkles();
+    }
+    destroy() {
+      this.stopMouthAnim();
+      if (this.blinkTimer) {
+        clearTimeout(this.blinkTimer);
+        this.blinkTimer = null;
+      }
+      this.container = null;
+      this.inner = null;
+      this.svg = null;
+      this.mouthEl = null;
+      this.eyeL = null;
+      this.eyeR = null;
+    }
+    // ─── private ───────────────────────────────────────────────────
+    scheduleBlink() {
+      this.blinkTimer = setTimeout(() => {
+        this.blink();
+        this.scheduleBlink();
+      }, 2500 + Math.random() * 3500);
+    }
+    blink() {
+      if (!this.eyeL || !this.eyeR) return;
+      this.eyeL.setAttribute("ry", "0.6");
+      this.eyeR.setAttribute("ry", "0.6");
+      if (this.eyeShineL) this.eyeShineL.style.opacity = "0";
+      if (this.eyeShineR) this.eyeShineR.style.opacity = "0";
+      setTimeout(() => {
+        if (this.eyeL) this.eyeL.setAttribute("ry", "3.5");
+        if (this.eyeR) this.eyeR.setAttribute("ry", "3.5");
+        if (this.eyeShineL) this.eyeShineL.style.opacity = "1";
+        if (this.eyeShineR) this.eyeShineR.style.opacity = "1";
+      }, 120);
+    }
+    buildSVG() {
+      const s = this.size;
+      const c = this.primaryColor;
+      const ns = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(ns, "svg");
+      svg.setAttribute("width", String(s));
+      svg.setAttribute("height", String(s));
+      svg.setAttribute("viewBox", "0 0 72 72");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("xmlns", ns);
+      this.svg = svg;
+      const el = (tag, attrs) => {
+        const e = document.createElementNS(ns, tag);
+        for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+        return e;
+      };
+      svg.appendChild(el("ellipse", { cx: "36", cy: "70", rx: "14", ry: "3", fill: "rgba(0,0,0,0.12)" }));
+      svg.appendChild(el("rect", { x: "6", y: "22", width: "4", height: "46", rx: "2", fill: "#4b5563" }));
+      svg.appendChild(el("circle", { cx: "8", cy: "19", r: "7", fill: c }));
+      svg.appendChild(el("circle", { cx: "6", cy: "17", r: "2", fill: "rgba(255,255,255,0.45)" }));
+      svg.appendChild(el("ellipse", { cx: "13", cy: "46", rx: "8", ry: "10", fill: "#374151" }));
+      svg.appendChild(el("ellipse", { cx: "59", cy: "46", rx: "8", ry: "10", fill: "#374151" }));
+      svg.appendChild(el("rect", { x: "16", y: "34", width: "40", height: "36", rx: "10", fill: "#1f2937" }));
+      svg.appendChild(el("rect", { x: "16", y: "34", width: "40", height: "5", rx: "4", fill: c, opacity: "0.25" }));
+      svg.appendChild(el("polygon", { points: "36,1 52,14 20,14", fill: c }));
+      svg.appendChild(el("ellipse", { cx: "36", cy: "14", rx: "20", ry: "4", fill: c }));
+      svg.appendChild(el("circle", { cx: "36", cy: "2", r: "2.5", fill: "white" }));
+      svg.appendChild(el("circle", { cx: "42", cy: "7", r: "1.5", fill: "rgba(255,255,255,0.65)" }));
+      svg.appendChild(el("circle", { cx: "30", cy: "7", r: "1", fill: "rgba(255,255,255,0.45)" }));
+      svg.appendChild(el("circle", { cx: "36", cy: "27", r: "14", fill: "#1f2937" }));
+      const browL = el("rect", { x: "26", y: "20", width: "9", height: "2.5", rx: "1.2", fill: "#e5e7eb" });
+      browL.setAttribute("transform", "rotate(-8 30 21)");
+      svg.appendChild(browL);
+      const browR = el("rect", { x: "37", y: "20", width: "9", height: "2.5", rx: "1.2", fill: "#e5e7eb" });
+      browR.setAttribute("transform", "rotate(8 42 21)");
+      svg.appendChild(browR);
+      const eyeL = el("ellipse", { cx: "30", cy: "26", rx: "3.5", ry: "3.5", fill: c });
+      svg.appendChild(eyeL);
+      this.eyeL = eyeL;
+      const eyeR = el("ellipse", { cx: "42", cy: "26", rx: "3.5", ry: "3.5", fill: c });
+      svg.appendChild(eyeR);
+      this.eyeR = eyeR;
+      const shineL = el("circle", { cx: "31.5", cy: "24.5", r: "1.2", fill: "white" });
+      svg.appendChild(shineL);
+      this.eyeShineL = shineL;
+      const shineR = el("circle", { cx: "43.5", cy: "24.5", r: "1.2", fill: "white" });
+      svg.appendChild(shineR);
+      this.eyeShineR = shineR;
+      svg.appendChild(el("ellipse", { cx: "36", cy: "37", rx: "10", ry: "8", fill: "#e5e7eb" }));
+      const mouth = el("rect", { x: "31", y: "36", width: "10", height: "3", rx: "1.5", fill: "#9ca3af" });
+      svg.appendChild(mouth);
+      this.mouthEl = mouth;
+      return svg;
+    }
+    startMouthAnim() {
+      if (this.mouthTimer) return;
+      this.mouthTimer = setInterval(() => {
+        if (!this.mouthEl) return;
+        this.mouthOpen = !this.mouthOpen;
+        this.mouthEl.setAttribute("height", this.mouthOpen ? "6" : "3");
+        this.mouthEl.setAttribute("y", this.mouthOpen ? "35" : "36");
+      }, 190);
+    }
+    stopMouthAnim() {
+      if (this.mouthTimer) {
+        clearInterval(this.mouthTimer);
+        this.mouthTimer = null;
+      }
+      if (this.mouthEl) {
+        this.mouthEl.setAttribute("height", "3");
+        this.mouthEl.setAttribute("y", "36");
+      }
+      this.mouthOpen = false;
+    }
+    spawnSparkles() {
+      if (!this.inner) return;
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          const dot = document.createElement("div");
+          dot.className = "tmrg-sparkle";
+          const rad = i / 6 * 360 * Math.PI / 180;
+          const dist = 28 + Math.random() * 16;
+          dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
+          dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
+          dot.style.backgroundColor = SPARKLE_COLORS$3[i % SPARKLE_COLORS$3.length];
+          dot.style.top = "22px";
+          dot.style.left = "30px";
+          this.inner.appendChild(dot);
+          setTimeout(() => dot.remove(), 750);
+        }, i * 60);
+      }
+    }
+  }
+  const SPARKLE_COLORS$2 = ["#ff6700", "#ffd700", "#ff4fa3", "#4fc3f7"];
+  const STAR_POINTS = "36,14 42,30 59,31 46,41 50,57 36,48 22,57 26,41 13,31 30,30";
+  class StarCharacter {
+    constructor(size = 72, primaryColor = "#ff6700") {
+      this.size = size;
+      this.primaryColor = primaryColor;
+      this.container = null;
+      this.inner = null;
+      this.svg = null;
+      this.mouthEl = null;
+      this.eyeL = null;
+      this.eyeR = null;
+      this.eyeShineL = null;
+      this.eyeShineR = null;
+      this.blinkTimer = null;
+      this.mouthTimer = null;
+      this.mouthOpen = false;
+    }
+    mount(container) {
+      this.container = container;
+      const inner = document.createElement("div");
+      inner.className = "tmrg-char-inner";
+      inner.style.cssText = `display:inline-block;position:relative;`;
+      inner.appendChild(this.buildSVG());
+      container.appendChild(inner);
+      this.inner = inner;
+      this.scheduleBlink();
+    }
+    setState(state) {
+      var _a, _b, _c, _d;
+      if (!this.container) return;
+      this.container.dataset.state = state;
+      if (state === "thinking") {
+        (_a = this.eyeL) == null ? void 0 : _a.setAttribute("cy", "32");
+        (_b = this.eyeR) == null ? void 0 : _b.setAttribute("cy", "32");
+      } else {
+        (_c = this.eyeL) == null ? void 0 : _c.setAttribute("cy", "36");
+        (_d = this.eyeR) == null ? void 0 : _d.setAttribute("cy", "36");
+      }
+      if (state === "talking") {
+        this.startMouthAnim();
+      } else {
+        this.stopMouthAnim();
+      }
+      if (state === "celebrating") this.spawnSparkles();
+    }
+    destroy() {
+      this.stopMouthAnim();
+      if (this.blinkTimer) {
+        clearTimeout(this.blinkTimer);
+        this.blinkTimer = null;
+      }
+      this.container = null;
+      this.inner = null;
+      this.svg = null;
+      this.mouthEl = null;
+      this.eyeL = null;
+      this.eyeR = null;
+    }
+    // ─── private ───────────────────────────────────────────────────
+    scheduleBlink() {
+      this.blinkTimer = setTimeout(() => {
+        this.blink();
+        this.scheduleBlink();
+      }, 2500 + Math.random() * 3500);
+    }
+    blink() {
+      if (!this.eyeL || !this.eyeR) return;
+      this.eyeL.setAttribute("ry", "0.6");
+      this.eyeR.setAttribute("ry", "0.6");
+      if (this.eyeShineL) this.eyeShineL.style.opacity = "0";
+      if (this.eyeShineR) this.eyeShineR.style.opacity = "0";
+      setTimeout(() => {
+        if (this.eyeL) this.eyeL.setAttribute("ry", "4");
+        if (this.eyeR) this.eyeR.setAttribute("ry", "4");
+        if (this.eyeShineL) this.eyeShineL.style.opacity = "1";
+        if (this.eyeShineR) this.eyeShineR.style.opacity = "1";
+      }, 120);
+    }
+    buildSVG() {
+      const s = this.size;
+      const c = this.primaryColor;
+      const ns = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(ns, "svg");
+      svg.setAttribute("width", String(s));
+      svg.setAttribute("height", String(s));
+      svg.setAttribute("viewBox", "0 0 72 72");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("xmlns", ns);
+      this.svg = svg;
+      const el = (tag, attrs) => {
+        const e = document.createElementNS(ns, tag);
+        for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+        return e;
+      };
+      svg.appendChild(el("ellipse", { cx: "36", cy: "66", rx: "13", ry: "2.5", fill: "rgba(0,0,0,0.12)" }));
+      svg.appendChild(el("polygon", { points: STAR_POINTS, fill: c }));
+      svg.appendChild(el("circle", { cx: "36", cy: "38", r: "14", fill: "rgba(255,255,255,0.15)" }));
+      svg.appendChild(el("circle", { cx: "29", cy: "36", r: "5", fill: "white" }));
+      svg.appendChild(el("circle", { cx: "43", cy: "36", r: "5", fill: "white" }));
+      const eyeL = el("ellipse", { cx: "29", cy: "36", rx: "4", ry: "4", fill: "#1f2937" });
+      svg.appendChild(eyeL);
+      this.eyeL = eyeL;
+      const eyeR = el("ellipse", { cx: "43", cy: "36", rx: "4", ry: "4", fill: "#1f2937" });
+      svg.appendChild(eyeR);
+      this.eyeR = eyeR;
+      const shineL = el("circle", { cx: "31", cy: "34", r: "1.5", fill: "white" });
+      svg.appendChild(shineL);
+      this.eyeShineL = shineL;
+      const shineR = el("circle", { cx: "45", cy: "34", r: "1.5", fill: "white" });
+      svg.appendChild(shineR);
+      this.eyeShineR = shineR;
+      svg.appendChild(el("circle", { cx: "21", cy: "41", r: "3.5", fill: "rgba(255,150,80,0.35)" }));
+      svg.appendChild(el("circle", { cx: "51", cy: "41", r: "3.5", fill: "rgba(255,150,80,0.35)" }));
+      const mouth = el("rect", { x: "30", y: "43", width: "12", height: "4", rx: "2", fill: "#1f2937" });
+      svg.appendChild(mouth);
+      this.mouthEl = mouth;
+      return svg;
+    }
+    startMouthAnim() {
+      if (this.mouthTimer) return;
+      this.mouthTimer = setInterval(() => {
+        if (!this.mouthEl) return;
+        this.mouthOpen = !this.mouthOpen;
+        this.mouthEl.setAttribute("height", this.mouthOpen ? "7" : "4");
+        this.mouthEl.setAttribute("y", this.mouthOpen ? "41" : "43");
+      }, 180);
+    }
+    stopMouthAnim() {
+      if (this.mouthTimer) {
+        clearInterval(this.mouthTimer);
+        this.mouthTimer = null;
+      }
+      if (this.mouthEl) {
+        this.mouthEl.setAttribute("height", "4");
+        this.mouthEl.setAttribute("y", "43");
+      }
+      this.mouthOpen = false;
+    }
+    spawnSparkles() {
+      if (!this.inner) return;
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          const dot = document.createElement("div");
+          dot.className = "tmrg-sparkle";
+          const rad = i / 6 * 360 * Math.PI / 180;
+          const dist = 28 + Math.random() * 16;
+          dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
+          dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
+          dot.style.backgroundColor = SPARKLE_COLORS$2[i % SPARKLE_COLORS$2.length];
+          dot.style.top = "24px";
+          dot.style.left = "30px";
+          this.inner.appendChild(dot);
+          setTimeout(() => dot.remove(), 750);
+        }, i * 60);
+      }
+    }
+  }
+  const SPARKLE_COLORS$1 = ["#ff6700", "#ffd700", "#ff4fa3", "#4fc3f7"];
+  const PATH_OPEN = "M 36,25 L 50,11 A 20,20 0 1 0 50,39 Z";
+  const PATH_MEDIUM = "M 36,25 L 55,17 A 20,20 0 1 0 55,33 Z";
+  const PATH_CLOSED = "M 36,25 L 56,24 A 20,20 0 1 0 56,26 Z";
+  class SliceCharacter {
+    constructor(size = 72, primaryColor = "#ff6700") {
+      this.size = size;
+      this.primaryColor = primaryColor;
+      this.container = null;
+      this.inner = null;
+      this.svg = null;
+      this.headPath = null;
+      this.eyeL = null;
+      this.eyeR = null;
+      this.eyeShineL = null;
+      this.eyeShineR = null;
+      this.blinkTimer = null;
+      this.chompTimer = null;
+      this.chompOpen = false;
+    }
+    mount(container) {
+      this.container = container;
+      const inner = document.createElement("div");
+      inner.className = "tmrg-char-inner";
+      inner.style.cssText = `display:inline-block;position:relative;`;
+      inner.appendChild(this.buildSVG());
+      container.appendChild(inner);
+      this.inner = inner;
+      this.scheduleBlink();
+    }
+    setState(state) {
+      var _a, _b, _c, _d, _e, _f;
+      if (!this.container) return;
+      this.container.dataset.state = state;
+      if (state === "thinking") {
+        (_a = this.headPath) == null ? void 0 : _a.setAttribute("d", PATH_CLOSED);
+        (_b = this.eyeL) == null ? void 0 : _b.setAttribute("cy", "18");
+        (_c = this.eyeR) == null ? void 0 : _c.setAttribute("cy", "11");
+      } else {
+        if (state !== "talking") {
+          (_d = this.headPath) == null ? void 0 : _d.setAttribute("d", PATH_OPEN);
+        }
+        (_e = this.eyeL) == null ? void 0 : _e.setAttribute("cy", "21");
+        (_f = this.eyeR) == null ? void 0 : _f.setAttribute("cy", "14");
+      }
+      if (state === "talking") {
+        this.startChomp();
+      } else {
+        this.stopChomp();
+      }
+      if (state === "celebrating") this.spawnSparkles();
+    }
+    destroy() {
+      this.stopChomp();
+      if (this.blinkTimer) {
+        clearTimeout(this.blinkTimer);
+        this.blinkTimer = null;
+      }
+      this.container = null;
+      this.inner = null;
+      this.svg = null;
+      this.headPath = null;
+      this.eyeL = null;
+      this.eyeR = null;
+    }
+    // ─── private ───────────────────────────────────────────────────
+    scheduleBlink() {
+      this.blinkTimer = setTimeout(() => {
+        this.blink();
+        this.scheduleBlink();
+      }, 2500 + Math.random() * 3500);
+    }
+    /** Close the irises (ry → 0.6) for 120ms then reopen. */
+    blink() {
+      if (!this.eyeL || !this.eyeR) return;
+      this.eyeL.setAttribute("ry", "0.6");
+      this.eyeR.setAttribute("ry", "0.6");
+      if (this.eyeShineL) this.eyeShineL.style.opacity = "0";
+      if (this.eyeShineR) this.eyeShineR.style.opacity = "0";
+      setTimeout(() => {
+        if (this.eyeL) this.eyeL.setAttribute("ry", "3");
+        if (this.eyeR) this.eyeR.setAttribute("ry", "3");
+        if (this.eyeShineL) this.eyeShineL.style.opacity = "1";
+        if (this.eyeShineR) this.eyeShineR.style.opacity = "1";
+      }, 120);
+    }
+    buildSVG() {
+      const s = this.size;
+      const c = this.primaryColor;
+      const ns = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(ns, "svg");
+      svg.setAttribute("width", String(s));
+      svg.setAttribute("height", String(s));
+      svg.setAttribute("viewBox", "0 0 72 72");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("xmlns", ns);
+      this.svg = svg;
+      const el = (tag, attrs) => {
+        const e = document.createElementNS(ns, tag);
+        for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+        return e;
+      };
+      svg.appendChild(el("ellipse", { cx: "36", cy: "70", rx: "16", ry: "3", fill: "rgba(0,0,0,0.12)" }));
+      svg.appendChild(el("rect", { x: "24", y: "44", width: "24", height: "13", rx: "7", fill: c }));
+      svg.appendChild(el("rect", { x: "25", y: "55", width: "8", height: "9", rx: "4", fill: "#374151" }));
+      svg.appendChild(el("rect", { x: "39", y: "55", width: "8", height: "9", rx: "4", fill: "#374151" }));
+      const headPath = el("path", { d: PATH_OPEN, fill: c });
+      svg.appendChild(headPath);
+      this.headPath = headPath;
+      svg.appendChild(el("circle", { cx: "24", cy: "21", r: "4.5", fill: "white" }));
+      svg.appendChild(el("circle", { cx: "30", cy: "13", r: "4.5", fill: "white" }));
+      const eyeL = el("ellipse", { cx: "24", cy: "21", rx: "3", ry: "3", fill: "#1f2937" });
+      svg.appendChild(eyeL);
+      this.eyeL = eyeL;
+      const eyeR = el("ellipse", { cx: "30", cy: "14", rx: "3", ry: "3", fill: "#1f2937" });
+      svg.appendChild(eyeR);
+      this.eyeR = eyeR;
+      const shineL = el("circle", { cx: "25.5", cy: "19.5", r: "1.2", fill: "white" });
+      svg.appendChild(shineL);
+      this.eyeShineL = shineL;
+      const shineR = el("circle", { cx: "31.5", cy: "12.5", r: "1.2", fill: "white" });
+      svg.appendChild(shineR);
+      this.eyeShineR = shineR;
+      return svg;
+    }
+    /** Chomp animation: alternate between PATH_OPEN and PATH_MEDIUM. */
+    startChomp() {
+      if (this.chompTimer) return;
+      this.chompTimer = setInterval(() => {
+        if (!this.headPath) return;
+        this.chompOpen = !this.chompOpen;
+        this.headPath.setAttribute("d", this.chompOpen ? PATH_OPEN : PATH_MEDIUM);
+      }, 180);
+    }
+    stopChomp() {
+      var _a;
+      if (this.chompTimer) {
+        clearInterval(this.chompTimer);
+        this.chompTimer = null;
+      }
+      (_a = this.headPath) == null ? void 0 : _a.setAttribute("d", PATH_OPEN);
+      this.chompOpen = false;
+    }
+    spawnSparkles() {
+      if (!this.inner) return;
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          const dot = document.createElement("div");
+          dot.className = "tmrg-sparkle";
+          const rad = i / 6 * 360 * Math.PI / 180;
+          const dist = 28 + Math.random() * 16;
+          dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
+          dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
+          dot.style.backgroundColor = SPARKLE_COLORS$1[i % SPARKLE_COLORS$1.length];
+          dot.style.top = "20px";
+          dot.style.left = "30px";
+          this.inner.appendChild(dot);
+          setTimeout(() => dot.remove(), 750);
+        }, i * 60);
+      }
+    }
+  }
+  const SPARKLE_COLORS = ["#ff6700", "#ffd700", "#ff4fa3", "#4fc3f7"];
+  const OX = 36;
+  const OY = 33;
+  class OrbitCharacter {
+    // degrees per rAF tick (~60fps → ~7.5s/rev)
+    constructor(size = 72, primaryColor = "#ff6700") {
+      this.size = size;
+      this.primaryColor = primaryColor;
+      this.container = null;
+      this.inner = null;
+      this.svg = null;
+      this.mouthEl = null;
+      this.eyeL = null;
+      this.eyeR = null;
+      this.eyeShineL = null;
+      this.eyeShineR = null;
+      this.sat1 = null;
+      this.sat2 = null;
+      this.sat3 = null;
+      this.blinkTimer = null;
+      this.mouthTimer = null;
+      this.mouthOpen = false;
+      this.rafId = null;
+      this.orbitAngle = 0;
+      this.orbitSpeed = 0.8;
+    }
+    mount(container) {
+      this.container = container;
+      const inner = document.createElement("div");
+      inner.className = "tmrg-char-inner";
+      inner.style.cssText = `display:inline-block;position:relative;overflow:visible;`;
+      inner.appendChild(this.buildSVG());
+      container.appendChild(inner);
+      this.inner = inner;
+      this.scheduleBlink();
+      this.startOrbit();
+    }
+    setState(state) {
+      var _a, _b, _c, _d;
+      if (!this.container) return;
+      this.container.dataset.state = state;
+      if (state === "thinking") {
+        (_a = this.eyeL) == null ? void 0 : _a.setAttribute("cy", "29");
+        (_b = this.eyeR) == null ? void 0 : _b.setAttribute("cy", "29");
+        this.orbitSpeed = 0.2;
+      } else {
+        (_c = this.eyeL) == null ? void 0 : _c.setAttribute("cy", "31");
+        (_d = this.eyeR) == null ? void 0 : _d.setAttribute("cy", "31");
+        this.orbitSpeed = state === "celebrating" ? 4 : state === "talking" ? 1.4 : 0.8;
+      }
+      if (state === "talking") {
+        this.startMouthAnim();
+      } else {
+        this.stopMouthAnim();
+      }
+      if (state === "celebrating") this.spawnSparkles();
+    }
+    destroy() {
+      this.stopMouthAnim();
+      this.stopOrbit();
+      if (this.blinkTimer) {
+        clearTimeout(this.blinkTimer);
+        this.blinkTimer = null;
+      }
+      this.container = null;
+      this.inner = null;
+      this.svg = null;
+      this.mouthEl = null;
+      this.eyeL = null;
+      this.eyeR = null;
+      this.sat1 = null;
+      this.sat2 = null;
+      this.sat3 = null;
+    }
+    // ─── private ───────────────────────────────────────────────────
+    scheduleBlink() {
+      this.blinkTimer = setTimeout(() => {
+        this.blink();
+        this.scheduleBlink();
+      }, 2500 + Math.random() * 3500);
+    }
+    blink() {
+      if (!this.eyeL || !this.eyeR) return;
+      this.eyeL.setAttribute("ry", "0.6");
+      this.eyeR.setAttribute("ry", "0.6");
+      if (this.eyeShineL) this.eyeShineL.style.opacity = "0";
+      if (this.eyeShineR) this.eyeShineR.style.opacity = "0";
+      setTimeout(() => {
+        if (this.eyeL) this.eyeL.setAttribute("ry", "4");
+        if (this.eyeR) this.eyeR.setAttribute("ry", "4");
+        if (this.eyeShineL) this.eyeShineL.style.opacity = "1";
+        if (this.eyeShineR) this.eyeShineR.style.opacity = "1";
+      }, 120);
+    }
+    /** rAF loop — moves satellite circles continuously. */
+    startOrbit() {
+      const tick = () => {
+        this.orbitAngle = (this.orbitAngle + this.orbitSpeed) % 360;
+        this.updateSatellites();
+        this.rafId = requestAnimationFrame(tick);
+      };
+      this.rafId = requestAnimationFrame(tick);
+    }
+    stopOrbit() {
+      if (this.rafId !== null) {
+        cancelAnimationFrame(this.rafId);
+        this.rafId = null;
+      }
+    }
+    updateSatellites() {
+      const deg = this.orbitAngle * Math.PI / 180;
+      if (this.sat1) {
+        this.sat1.setAttribute("cx", String(OX + 23 * Math.cos(deg)));
+        this.sat1.setAttribute("cy", String(OY + 23 * Math.sin(deg)));
+      }
+      if (this.sat2) {
+        const a2 = (this.orbitAngle * 0.7 + 120) * Math.PI / 180;
+        this.sat2.setAttribute("cx", String(OX + 31 * Math.cos(a2)));
+        this.sat2.setAttribute("cy", String(OY + 31 * Math.sin(a2)));
+      }
+      if (this.sat3) {
+        const a3 = (this.orbitAngle * 0.5 + 240) * Math.PI / 180;
+        this.sat3.setAttribute("cx", String(OX + 38 * Math.cos(a3)));
+        this.sat3.setAttribute("cy", String(OY + 38 * Math.sin(a3)));
+      }
+    }
+    buildSVG() {
+      const s = this.size;
+      const c = this.primaryColor;
+      const ns = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(ns, "svg");
+      svg.setAttribute("width", String(s));
+      svg.setAttribute("height", String(s));
+      svg.setAttribute("viewBox", "0 0 72 72");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("overflow", "visible");
+      svg.setAttribute("xmlns", ns);
+      this.svg = svg;
+      const el = (tag, attrs) => {
+        const e = document.createElementNS(ns, tag);
+        for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+        return e;
+      };
+      svg.appendChild(el("ellipse", { cx: "36", cy: "70", rx: "18", ry: "3", fill: "rgba(0,0,0,0.12)" }));
+      const sat1 = el("circle", { cx: String(OX + 23), cy: String(OY), r: "4", fill: c });
+      svg.appendChild(sat1);
+      this.sat1 = sat1;
+      const sat2 = el("circle", { cx: String(OX - 15), cy: String(OY - 27), r: "3", fill: c, opacity: "0.8" });
+      svg.appendChild(sat2);
+      this.sat2 = sat2;
+      const sat3 = el("circle", { cx: String(OX - 19), cy: String(OY + 33), r: "2.5", fill: c, opacity: "0.65" });
+      svg.appendChild(sat3);
+      this.sat3 = sat3;
+      svg.appendChild(el("circle", { cx: "36", cy: "33", r: "20", fill: "#1f2937" }));
+      svg.appendChild(el("ellipse", {
+        cx: "36",
+        cy: "33",
+        rx: "20",
+        ry: "5",
+        fill: "none",
+        stroke: c,
+        "stroke-width": "1.2",
+        opacity: "0.25"
+      }));
+      const eyeL = el("ellipse", { cx: "28", cy: "31", rx: "4", ry: "4", fill: c });
+      svg.appendChild(eyeL);
+      this.eyeL = eyeL;
+      const eyeR = el("ellipse", { cx: "44", cy: "31", rx: "4", ry: "4", fill: c });
+      svg.appendChild(eyeR);
+      this.eyeR = eyeR;
+      const shineL = el("circle", { cx: "30", cy: "29", r: "1.5", fill: "white" });
+      svg.appendChild(shineL);
+      this.eyeShineL = shineL;
+      const shineR = el("circle", { cx: "46", cy: "29", r: "1.5", fill: "white" });
+      svg.appendChild(shineR);
+      this.eyeShineR = shineR;
+      const mouth = el("rect", { x: "28", y: "38", width: "16", height: "4", rx: "2", fill: c, opacity: "0.55" });
+      svg.appendChild(mouth);
+      this.mouthEl = mouth;
+      return svg;
+    }
+    startMouthAnim() {
+      if (this.mouthTimer) return;
+      this.mouthTimer = setInterval(() => {
+        if (!this.mouthEl) return;
+        this.mouthOpen = !this.mouthOpen;
+        this.mouthEl.setAttribute("height", this.mouthOpen ? "7" : "4");
+        this.mouthEl.setAttribute("y", this.mouthOpen ? "36" : "38");
+      }, 180);
+    }
+    stopMouthAnim() {
+      if (this.mouthTimer) {
+        clearInterval(this.mouthTimer);
+        this.mouthTimer = null;
+      }
+      if (this.mouthEl) {
+        this.mouthEl.setAttribute("height", "4");
+        this.mouthEl.setAttribute("y", "38");
+      }
+      this.mouthOpen = false;
+    }
+    spawnSparkles() {
+      if (!this.inner) return;
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          const dot = document.createElement("div");
+          dot.className = "tmrg-sparkle";
+          const rad = i / 6 * 360 * Math.PI / 180;
+          const dist = 28 + Math.random() * 16;
+          dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
+          dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
+          dot.style.backgroundColor = SPARKLE_COLORS[i % SPARKLE_COLORS.length];
+          dot.style.top = "24px";
+          dot.style.left = "30px";
           this.inner.appendChild(dot);
           setTimeout(() => dot.remove(), 750);
         }, i * 60);
@@ -1566,7 +2705,8 @@ var TMRGuide = function(exports) {
       charContainer.style.height = `${this.charSize}px`;
       root.appendChild(charContainer);
       this.charContainer = charContainer;
-      const char = new BotCharacter(this.charSize, primaryColor);
+      const charOpt = config.character ?? "bot";
+      const char = charOpt === "owl" ? new OwlCharacter(this.charSize, primaryColor) : charOpt === "astronaut" ? new AstronautCharacter(this.charSize, primaryColor) : charOpt === "wizard" ? new WizardCharacter(this.charSize, primaryColor) : charOpt === "star" ? new StarCharacter(this.charSize, primaryColor) : charOpt === "slice" ? new SliceCharacter(this.charSize, primaryColor) : charOpt === "orbit" ? new OrbitCharacter(this.charSize, primaryColor) : charOpt === "bot" ? new BotCharacter(this.charSize, primaryColor) : typeof charOpt === "string" ? new BotCharacter(this.charSize, primaryColor) : charOpt;
       char.mount(charContainer);
       this.character = char;
       const { x: cx, y: cy } = this.cornerPosition();
@@ -1973,7 +3113,14 @@ var TMRGuide = function(exports) {
     }
   }
   const TMRGuide2 = new TMRGuideSDK();
+  exports.AstronautCharacter = AstronautCharacter;
+  exports.BotCharacter = BotCharacter;
+  exports.OrbitCharacter = OrbitCharacter;
+  exports.OwlCharacter = OwlCharacter;
+  exports.SliceCharacter = SliceCharacter;
+  exports.StarCharacter = StarCharacter;
   exports.TMRGuide = TMRGuide2;
+  exports.WizardCharacter = WizardCharacter;
   Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
   return exports;
 }({});

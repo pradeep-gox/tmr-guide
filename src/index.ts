@@ -7,6 +7,12 @@ import type {
   ToggleStyle,
 } from "./types";
 import { BotCharacter } from "./character/BotCharacter";
+import { OwlCharacter } from "./character/OwlCharacter";
+import { AstronautCharacter } from "./character/AstronautCharacter";
+import { WizardCharacter } from "./character/WizardCharacter";
+import { StarCharacter } from "./character/StarCharacter";
+import { SliceCharacter } from "./character/SliceCharacter";
+import { OrbitCharacter } from "./character/OrbitCharacter";
 import { CHARACTER_CSS } from "./character/styles";
 import { SpotlightManager } from "./spotlight/SpotlightManager";
 import { BubbleManager } from "./bubble/BubbleManager";
@@ -64,8 +70,18 @@ class TMRGuideSDK {
     root.appendChild(charContainer);
     this.charContainer = charContainer;
 
-    // Character renderer
-    const char = new BotCharacter(this.charSize, primaryColor);
+    // Character renderer — built-in name, custom instance, or default bot
+    const charOpt = config.character ?? "bot";
+    const char: CharacterRenderer =
+      charOpt === "owl"        ? new OwlCharacter(this.charSize, primaryColor)
+      : charOpt === "astronaut" ? new AstronautCharacter(this.charSize, primaryColor)
+      : charOpt === "wizard"    ? new WizardCharacter(this.charSize, primaryColor)
+      : charOpt === "star"      ? new StarCharacter(this.charSize, primaryColor)
+      : charOpt === "slice"     ? new SliceCharacter(this.charSize, primaryColor)
+      : charOpt === "orbit"     ? new OrbitCharacter(this.charSize, primaryColor)
+      : charOpt === "bot"       ? new BotCharacter(this.charSize, primaryColor)
+      : typeof charOpt === "string" ? new BotCharacter(this.charSize, primaryColor) // unknown name → fallback
+      : charOpt; // custom CharacterRenderer passed directly
     char.mount(charContainer);
     this.character = char;
 
@@ -537,12 +553,22 @@ class TMRGuideSDK {
 // Singleton export — works both as ESM import and as window.TMRGuide via IIFE
 export const TMRGuide = new TMRGuideSDK();
 
+// Re-export built-in characters so consumers can use them as custom renderers
+export { BotCharacter } from "./character/BotCharacter";
+export { OwlCharacter } from "./character/OwlCharacter";
+export { AstronautCharacter } from "./character/AstronautCharacter";
+export { WizardCharacter } from "./character/WizardCharacter";
+export { StarCharacter } from "./character/StarCharacter";
+export { SliceCharacter } from "./character/SliceCharacter";
+export { OrbitCharacter } from "./character/OrbitCharacter";
+
 // Re-export types for consumers
 export type {
   TMRGuideConfig,
   ShowOptions,
   TourStep,
   CharacterRenderer,
+  BuiltinCharacter,
   IdlePosition,
   ToggleStyle,
   HighlightMode,

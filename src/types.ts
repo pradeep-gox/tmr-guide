@@ -25,6 +25,18 @@ export type IdlePosition = "top-left" | "top-right" | "bottom-left" | "bottom-ri
 export type ToggleStyle = "below" | "hover" | "badge" | "corner-chip" | "context-menu";
 
 /**
+ * Built-in character names.
+ * - "bot"        — friendly robot (default)
+ * - "owl"        — wise owl with big eyes and ear tufts
+ * - "astronaut"  — space explorer in a helmet and white suit
+ * - "wizard"     — robed guide with a pointy hat and staff
+ * - "star"       — cheerful 5-point star with a cute face
+ * - "slice"      — TMR logo quarter-circle that chomps when talking
+ * - "orbit"      — data-point planet with three orbiting satellites
+ */
+export type BuiltinCharacter = "bot" | "owl" | "astronaut" | "wizard" | "star" | "slice" | "orbit";
+
+/**
  * Controls how the spotlight highlight behaves when pointing at a target element.
  *
  * - "persistent"  — overlay + ring stay on until the step changes (default)
@@ -37,6 +49,13 @@ export type HighlightMode = "persistent" | "timed" | "ring-only" | "pulse";
 export interface TMRGuideConfig {
   /** Endpoint to call for AI responses. e.g. '/api/onboarding/assist' */
   apiEndpoint: string;
+  /**
+   * Which character to display.
+   * - A built-in name: `"bot"` (default robot) or `"owl"`
+   * - A custom `CharacterRenderer` instance for a fully bespoke character
+   * Default: `"bot"`
+   */
+  character?: BuiltinCharacter | CharacterRenderer;
   userId?: string;
   emailId?: string;
   theme?: {

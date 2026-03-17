@@ -53,4 +53,11 @@ declare class TMRGuideSDK {
     private assertInit;
 }
 export declare const TMRGuide: TMRGuideSDK;
-export type { TMRGuideConfig, ShowOptions, TourStep, CharacterRenderer, IdlePosition, ToggleStyle, HighlightMode, } from "./types";
+export { BotCharacter } from "./character/BotCharacter";
+export { OwlCharacter } from "./character/OwlCharacter";
+export { AstronautCharacter } from "./character/AstronautCharacter";
+export { WizardCharacter } from "./character/WizardCharacter";
+export { StarCharacter } from "./character/StarCharacter";
+export { SliceCharacter } from "./character/SliceCharacter";
+export { OrbitCharacter } from "./character/OrbitCharacter";
+export type { TMRGuideConfig, ShowOptions, TourStep, CharacterRenderer, BuiltinCharacter, IdlePosition, ToggleStyle, HighlightMode, } from "./types";
