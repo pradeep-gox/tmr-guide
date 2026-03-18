@@ -68,25 +68,25 @@ TMRGuide.destroy();
 
 ## `TMRGuide.init(config)`
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `apiEndpoint` | `string` | **required** | URL to POST AI questions to |
-| `userId` | `string` | — | Forwarded to AI backend |
-| `emailId` | `string` | — | Forwarded to AI backend |
-| `theme.primaryColor` | `string` | `"#ff6700"` | Ring, bubble accent, robot eye colour |
-| `theme.characterSize` | `number` | `72` | Character container size in px |
-| `idlePosition` | `IdlePosition` | `"bottom-right"` | Corner the character rests in when idle/disabled |
-| `idlePositionOffsetX` | `number` | `24` | Horizontal px offset from the corner edge |
-| `idlePositionOffsetY` | `number` | `50` | Vertical px offset from the corner edge |
-| `toggleStyle` | `ToggleStyle` | `"hover"` | How the Enable/Disable toggle is presented |
-| `highlight.mode` | `HighlightMode` | `"persistent"` | How the spotlight behaves |
-| `highlight.color` | `string` | `primaryColor` | Ring border colour (any CSS colour) |
-| `highlight.ringWidth` | `number` | `3` | Ring border width in px |
-| `highlight.fadeDuration` | `number` | `4000` | ms before fade-out for `timed` / `pulse` modes |
-| `onStepChange` | `(stepId) => void` | — | Called whenever `show()` is invoked |
-| `onAskQuestion` | `(text) => void` | — | Called when the user submits a question |
-| `onDismiss` | `() => void` | — | Called when the bubble is dismissed |
-| `onFeedback` | `(rating, question) => void` | — | Called when user taps 👍 or 👎 after an AI response |
+| Option                   | Type                         | Default          | Description                                         |
+| ------------------------ | ---------------------------- | ---------------- | --------------------------------------------------- |
+| `apiEndpoint`            | `string`                     | **required**     | URL to POST AI questions to                         |
+| `userId`                 | `string`                     | —                | Forwarded to AI backend                             |
+| `emailId`                | `string`                     | —                | Forwarded to AI backend                             |
+| `theme.primaryColor`     | `string`                     | `"#ff6700"`      | Ring, bubble accent, robot eye colour               |
+| `theme.characterSize`    | `number`                     | `72`             | Character container size in px                      |
+| `idlePosition`           | `IdlePosition`               | `"bottom-right"` | Corner the character rests in when idle/disabled    |
+| `idlePositionOffsetX`    | `number`                     | `24`             | Horizontal px offset from the corner edge           |
+| `idlePositionOffsetY`    | `number`                     | `50`             | Vertical px offset from the corner edge             |
+| `toggleStyle`            | `ToggleStyle`                | `"hover"`        | How the Enable/Disable toggle is presented          |
+| `highlight.mode`         | `HighlightMode`              | `"persistent"`   | How the spotlight behaves                           |
+| `highlight.color`        | `string`                     | `primaryColor`   | Ring border colour (any CSS colour)                 |
+| `highlight.ringWidth`    | `number`                     | `3`              | Ring border width in px                             |
+| `highlight.fadeDuration` | `number`                     | `4000`           | ms before fade-out for `timed` / `pulse` modes      |
+| `onStepChange`           | `(stepId) => void`           | —                | Called whenever `show()` is invoked                 |
+| `onAskQuestion`          | `(text) => void`             | —                | Called when the user submits a question             |
+| `onDismiss`              | `() => void`                 | —                | Called when the bubble is dismissed                 |
+| `onFeedback`             | `(rating, question) => void` | —                | Called when user taps 👍 or 👎 after an AI response |
 
 ### `IdlePosition`
 
@@ -96,22 +96,22 @@ type IdlePosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
 ### `ToggleStyle`
 
-| Value | Description |
-|---|---|
-| `"hover"` | Pill fades in when the user hovers the character (default) |
-| `"below"` | Pill always visible directly below the character |
-| `"badge"` | Icon-only circle pinned to the top-right corner of the character |
-| `"corner-chip"` | Separate fixed pill anchored to the same viewport corner as `idlePosition` |
-| `"context-menu"` | No persistent UI — right-click the character to open a tiny menu |
+| Value            | Description                                                                |
+| ---------------- | -------------------------------------------------------------------------- |
+| `"hover"`        | Pill fades in when the user hovers the character (default)                 |
+| `"below"`        | Pill always visible directly below the character                           |
+| `"badge"`        | Icon-only circle pinned to the top-right corner of the character           |
+| `"corner-chip"`  | Separate fixed pill anchored to the same viewport corner as `idlePosition` |
+| `"context-menu"` | No persistent UI — right-click the character to open a tiny menu           |
 
 ### `HighlightMode`
 
-| Value | Description |
-|---|---|
-| `"persistent"` | Overlay + ring stay on until the step changes (default) |
-| `"timed"` | Overlay + ring fade out after `fadeDuration` ms |
-| `"ring-only"` | No dark overlay — only the glowing ring is shown |
-| `"pulse"` | Ring pulses 3× to draw attention, then fades (recommended) |
+| Value          | Description                                                |
+| -------------- | ---------------------------------------------------------- |
+| `"persistent"` | Overlay + ring stay on until the step changes (default)    |
+| `"timed"`      | Overlay + ring fade out after `fadeDuration` ms            |
+| `"ring-only"`  | No dark overlay — only the glowing ring is shown           |
+| `"pulse"`      | Ring pulses 3× to draw attention, then fades (recommended) |
 
 ---
 
@@ -121,12 +121,12 @@ Walk the character to a target element, spotlight it, and display a message.
 
 ```ts
 interface ShowOptions {
-  stepId: string;                                   // Sent to AI as context
-  message: string;                                  // Supports **bold**, *italic*, `code`, - lists, [links](url)
-  target?: string;                                  // CSS selector to spotlight. Omit for corner-idle.
-  position?: "left" | "right" | "top" | "bottom";  // Which side of target the character stands on
-  context?: Record<string, unknown>;                // Extra context merged into AI requests
-  showInput?: boolean;                              // Show Q&A textarea in bubble (default: false)
+  stepId: string; // Sent to AI as context
+  message: string; // Supports **bold**, *italic*, `code`, - lists, [links](url)
+  target?: string; // CSS selector to spotlight. Omit for corner-idle.
+  position?: "left" | "right" | "top" | "bottom"; // Which side of target the character stands on
+  context?: Record<string, unknown>; // Extra context merged into AI requests
+  showInput?: boolean; // Show Q&A textarea in bubble (default: false)
 }
 ```
 
@@ -216,14 +216,14 @@ Requests time out after **20 seconds** — the user sees "That took too long —
 
 The bubble text renderer supports a lightweight markdown subset:
 
-| Syntax | Output |
-|---|---|
-| `**bold**` | **bold** |
-| `*italic*` | *italic* |
-| `` `code` `` | inline code |
-| `- list item` | `<ul><li>` |
-| `[text](url)` | hyperlink |
-| `\n` | line break |
+| Syntax        | Output      |
+| ------------- | ----------- |
+| `**bold**`    | **bold**    |
+| `*italic*`    | _italic_    |
+| `` `code` ``  | inline code |
+| `- list item` | `<ul><li>`  |
+| `[text](url)` | hyperlink   |
+| `\n`          | line break  |
 
 After every AI response:
 
@@ -243,13 +243,13 @@ After every `show()`, `tour()`, or `celebrate()` call a document-level click lis
 
 ## Character States & Animations
 
-| State | When | Animation |
-|---|---|---|
-| `idle` | Default, between actions | Gentle float + random blinks (every 2.5–6s) |
-| `walking` | Moving to a new target | Side-to-side waddle |
-| `talking` | Showing a message | Mouth opens/closes |
-| `thinking` | Waiting for AI response | Eyes shift upward |
-| `celebrating` | After `celebrate()` | Jump + sparkle particles |
+| State         | When                     | Animation                                   |
+| ------------- | ------------------------ | ------------------------------------------- |
+| `idle`        | Default, between actions | Gentle float + random blinks (every 2.5–6s) |
+| `walking`     | Moving to a new target   | Side-to-side waddle                         |
+| `talking`     | Showing a message        | Mouth opens/closes                          |
+| `thinking`    | Waiting for AI response  | Eyes shift upward                           |
+| `celebrating` | After `celebrate()`      | Jump + sparkle particles                    |
 
 All animations respect `prefers-reduced-motion`.
 
@@ -303,10 +303,13 @@ The key challenge in React is preventing step-change effects from firing before 
 import { useEffect, useRef, useState } from "react";
 import { TMRGuide } from "tmr-guide";
 
-interface Props { stepId: string; userId: string | null }
+interface Props {
+  stepId: string;
+  userId: string | null;
+}
 
 export function GuideController({ stepId, userId }: Props) {
-  const initialised = useRef(false);        // synchronous guard (safe in setTimeout)
+  const initialised = useRef(false); // synchronous guard (safe in setTimeout)
   const [isInitialised, setIsInitialised] = useState(false); // dep-array guard
   const hasInteracted = useRef(false);
 
@@ -320,7 +323,9 @@ export function GuideController({ stepId, userId }: Props) {
       theme: { primaryColor: "#ff6700" },
       idlePosition: "bottom-left",
       highlight: { mode: "pulse" },
-      onAskQuestion: () => { hasInteracted.current = true; },
+      onAskQuestion: () => {
+        hasInteracted.current = true;
+      },
     });
     setIsInitialised(true);
     return () => {

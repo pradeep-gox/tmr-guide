@@ -73,15 +73,23 @@ class TMRGuideSDK {
     // Character renderer — built-in name, custom instance, or default bot
     const charOpt = config.character ?? "bot";
     const char: CharacterRenderer =
-      charOpt === "owl"        ? new OwlCharacter(this.charSize, primaryColor)
-      : charOpt === "astronaut" ? new AstronautCharacter(this.charSize, primaryColor)
-      : charOpt === "wizard"    ? new WizardCharacter(this.charSize, primaryColor)
-      : charOpt === "star"      ? new StarCharacter(this.charSize, primaryColor)
-      : charOpt === "slice"     ? new SliceCharacter(this.charSize, primaryColor)
-      : charOpt === "orbit"     ? new OrbitCharacter(this.charSize, primaryColor)
-      : charOpt === "bot"       ? new BotCharacter(this.charSize, primaryColor)
-      : typeof charOpt === "string" ? new BotCharacter(this.charSize, primaryColor) // unknown name → fallback
-      : charOpt; // custom CharacterRenderer passed directly
+      charOpt === "owl"
+        ? new OwlCharacter(this.charSize, primaryColor)
+        : charOpt === "astronaut"
+          ? new AstronautCharacter(this.charSize, primaryColor)
+          : charOpt === "wizard"
+            ? new WizardCharacter(this.charSize, primaryColor)
+            : charOpt === "star"
+              ? new StarCharacter(this.charSize, primaryColor)
+              : charOpt === "slice"
+                ? new SliceCharacter(this.charSize, primaryColor)
+                : charOpt === "orbit"
+                  ? new OrbitCharacter(this.charSize, primaryColor)
+                  : charOpt === "bot"
+                    ? new BotCharacter(this.charSize, primaryColor)
+                    : typeof charOpt === "string"
+                      ? new BotCharacter(this.charSize, primaryColor) // unknown name → fallback
+                      : charOpt; // custom CharacterRenderer passed directly
     char.mount(charContainer);
     this.character = char;
 
@@ -156,8 +164,7 @@ class TMRGuideSDK {
       : this.cornerPosition();
 
     const isAlreadyNear =
-      Math.abs(this.charX - targetPos.x) < 4 &&
-      Math.abs(this.charY - targetPos.y) < 4;
+      Math.abs(this.charX - targetPos.x) < 4 && Math.abs(this.charY - targetPos.y) < 4;
 
     if (!isAlreadyNear) {
       this.character!.setState("walking");
@@ -301,7 +308,10 @@ class TMRGuideSDK {
   }
 
   destroy(): void {
-    if (this.resizeDebounce) { clearTimeout(this.resizeDebounce); this.resizeDebounce = null; }
+    if (this.resizeDebounce) {
+      clearTimeout(this.resizeDebounce);
+      this.resizeDebounce = null;
+    }
     if (this.resizeHandler) {
       window.removeEventListener("resize", this.resizeHandler);
       this.resizeHandler = null;
@@ -364,10 +374,14 @@ class TMRGuideSDK {
     const right = vw - this.charSize - ox;
     const bottom = vh - this.charSize - oy;
     switch (pos) {
-      case "top-left":     return { x: ox,    y: oy };
-      case "top-right":    return { x: right,  y: oy };
-      case "bottom-left":  return { x: ox,    y: bottom };
-      case "bottom-right": return { x: right,  y: bottom };
+      case "top-left":
+        return { x: ox, y: oy };
+      case "top-right":
+        return { x: right, y: oy };
+      case "bottom-left":
+        return { x: ox, y: bottom };
+      case "bottom-right":
+        return { x: right, y: bottom };
     }
   }
 
@@ -415,7 +429,10 @@ class TMRGuideSDK {
       if (style === "hover") {
         let hideTimer: ReturnType<typeof setTimeout> | null = null;
         const showBtn = () => {
-          if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+          if (hideTimer) {
+            clearTimeout(hideTimer);
+            hideTimer = null;
+          }
           btn.style.opacity = "1";
           btn.style.pointerEvents = "auto";
         };
@@ -439,8 +456,8 @@ class TMRGuideSDK {
     if (!this.toggleBtn) return;
     const style: ToggleStyle = this.config?.toggleStyle ?? "hover";
     const disableIcon = `<svg width="9" height="9" viewBox="0 0 9 9" fill="none"><rect x="0.5" y="0.5" width="2.5" height="8" rx="1" fill="currentColor"/><rect x="6" y="0.5" width="2.5" height="8" rx="1" fill="currentColor"/></svg>`;
-    const enableIcon  = `<svg width="9" height="9" viewBox="0 0 9 9" fill="none"><polygon points="0.5,0.5 8.5,4.5 0.5,8.5" fill="currentColor"/></svg>`;
-    const icon  = this.enabled ? disableIcon : enableIcon;
+    const enableIcon = `<svg width="9" height="9" viewBox="0 0 9 9" fill="none"><polygon points="0.5,0.5 8.5,4.5 0.5,8.5" fill="currentColor"/></svg>`;
+    const icon = this.enabled ? disableIcon : enableIcon;
     const label = this.enabled ? "Disable Guide" : "Enable Guide";
     // Badge shows icon only; all others show icon + label
     this.toggleBtn.innerHTML = style === "badge" ? icon : `${icon} ${label}`;
@@ -455,10 +472,22 @@ class TMRGuideSDK {
     chip.style.top = chip.style.bottom = chip.style.left = chip.style.right = "auto";
     const m = "12px";
     switch (pos) {
-      case "top-left":     chip.style.top    = m; chip.style.left  = m; break;
-      case "top-right":    chip.style.top    = m; chip.style.right = m; break;
-      case "bottom-left":  chip.style.bottom = m; chip.style.left  = m; break;
-      case "bottom-right": chip.style.bottom = m; chip.style.right = m; break;
+      case "top-left":
+        chip.style.top = m;
+        chip.style.left = m;
+        break;
+      case "top-right":
+        chip.style.top = m;
+        chip.style.right = m;
+        break;
+      case "bottom-left":
+        chip.style.bottom = m;
+        chip.style.left = m;
+        break;
+      case "bottom-right":
+        chip.style.bottom = m;
+        chip.style.right = m;
+        break;
     }
   }
 
@@ -475,8 +504,8 @@ class TMRGuideSDK {
     this.contextMenu?.remove();
 
     const disableIcon = `<svg width="10" height="10" viewBox="0 0 9 9" fill="none"><rect x="0.5" y="0.5" width="2.5" height="8" rx="1" fill="currentColor"/><rect x="6" y="0.5" width="2.5" height="8" rx="1" fill="currentColor"/></svg>`;
-    const enableIcon  = `<svg width="10" height="10" viewBox="0 0 9 9" fill="none"><polygon points="0.5,0.5 8.5,4.5 0.5,8.5" fill="currentColor"/></svg>`;
-    const icon  = this.enabled ? disableIcon : enableIcon;
+    const enableIcon = `<svg width="10" height="10" viewBox="0 0 9 9" fill="none"><polygon points="0.5,0.5 8.5,4.5 0.5,8.5" fill="currentColor"/></svg>`;
+    const icon = this.enabled ? disableIcon : enableIcon;
     const label = this.enabled ? "Disable Guide" : "Enable Guide";
 
     const menu = document.createElement("div");
@@ -496,9 +525,10 @@ class TMRGuideSDK {
     this.contextMenu = menu;
 
     // Keep within viewport
-    const vw = window.innerWidth, vh = window.innerHeight;
+    const vw = window.innerWidth,
+      vh = window.innerHeight;
     menu.style.left = `${Math.min(x, vw - 180)}px`;
-    menu.style.top  = `${Math.min(y, vh - 48)}px`;
+    menu.style.top = `${Math.min(y, vh - 48)}px`;
 
     // Close on outside click
     const onOutside = (e: Event) => {

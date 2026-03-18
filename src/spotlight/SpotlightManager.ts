@@ -86,8 +86,10 @@ export class SpotlightManager {
     maskEl.setAttribute("id", "tmrg-mask");
 
     const white = document.createElementNS(svgNS, "rect");
-    white.setAttribute("x", "0"); white.setAttribute("y", "0");
-    white.setAttribute("width", "100%"); white.setAttribute("height", "100%");
+    white.setAttribute("x", "0");
+    white.setAttribute("y", "0");
+    white.setAttribute("width", "100%");
+    white.setAttribute("height", "100%");
     white.setAttribute("fill", "white");
     maskEl.appendChild(white);
 
@@ -101,8 +103,10 @@ export class SpotlightManager {
     svg.appendChild(defs);
 
     const dark = document.createElementNS(svgNS, "rect");
-    dark.setAttribute("x", "0"); dark.setAttribute("y", "0");
-    dark.setAttribute("width", "100%"); dark.setAttribute("height", "100%");
+    dark.setAttribute("x", "0");
+    dark.setAttribute("y", "0");
+    dark.setAttribute("width", "100%");
+    dark.setAttribute("height", "100%");
     dark.setAttribute("fill", "rgba(0,0,0,0.45)");
     dark.setAttribute("mask", "url(#tmrg-mask)");
     svg.appendChild(dark);
@@ -135,7 +139,9 @@ export class SpotlightManager {
     const fadeDuration = opts.fadeDuration ?? 4000;
 
     // Build box-shadow strings for normal + wide (pulse expanded) state
-    const glowHex = Math.round(0.25 * 255).toString(16).padStart(2, "0");
+    const glowHex = Math.round(0.25 * 255)
+      .toString(16)
+      .padStart(2, "0");
     const shadow = `0 0 0 ${width}px ${color}, 0 0 0 ${width * 2}px ${color}${glowHex}`;
     const shadowWide = `0 0 0 ${width + 2}px ${color}, 0 0 0 ${(width + 2) * 2}px ${color}${glowHex}`;
 
@@ -251,7 +257,9 @@ export class SpotlightManager {
     this.resizeObs?.disconnect();
     this.resizeObs = null;
     if (this.scrollHandler) {
-      window.removeEventListener("scroll", this.scrollHandler, { capture: true } as EventListenerOptions);
+      window.removeEventListener("scroll", this.scrollHandler, {
+        capture: true,
+      } as EventListenerOptions);
       window.removeEventListener("resize", this.scrollHandler);
       this.scrollHandler = null;
     }

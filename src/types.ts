@@ -1,9 +1,4 @@
-export type CharacterState =
-  | "idle"
-  | "walking"
-  | "talking"
-  | "thinking"
-  | "celebrating";
+export type CharacterState = "idle" | "walking" | "talking" | "thinking" | "celebrating";
 
 export interface CharacterRenderer {
   mount(container: HTMLElement): void;

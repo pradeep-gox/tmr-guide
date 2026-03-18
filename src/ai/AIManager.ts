@@ -21,10 +21,7 @@ export class AIManager {
    * Ask TMR AI Assistant a question.
    * Automatically times out after 20 seconds and returns a friendly fallback.
    */
-  async ask(
-    message: string,
-    context: Record<string, unknown>,
-  ): Promise<AIResponse> {
+  async ask(message: string, context: Record<string, unknown>): Promise<AIResponse> {
     const history = this.history.slice(-12);
 
     const body = {
@@ -34,9 +31,7 @@ export class AIManager {
       message,
       history,
       subscriptionContext:
-        typeof context.subscriptionContext === "string"
-          ? context.subscriptionContext
-          : undefined,
+        typeof context.subscriptionContext === "string" ? context.subscriptionContext : undefined,
     };
 
     const controller = new AbortController();
@@ -56,12 +51,8 @@ export class AIManager {
       const data = await res.json();
 
       const replyText: string = data.response ?? data.message ?? "";
-      const followUps: string[] = Array.isArray(data.followUps)
-        ? data.followUps
-        : [];
-      const sources: { title: string; url: string }[] = Array.isArray(
-        data.sources,
-      )
+      const followUps: string[] = Array.isArray(data.followUps) ? data.followUps : [];
+      const sources: { title: string; url: string }[] = Array.isArray(data.sources)
         ? data.sources
         : [];
 
@@ -71,12 +62,9 @@ export class AIManager {
       return { message: replyText, followUps, sources };
     } catch (err) {
       clearTimeout(timeoutId);
-      const isTimeout =
-        err instanceof DOMException && err.name === "AbortError";
+      const isTimeout = err instanceof DOMException && err.name === "AbortError";
       return {
-        message: isTimeout
-          ? "That took too long — please try again in a moment."
-          : FALLBACK_MSG,
+        message: isTimeout ? "That took too long — please try again in a moment." : FALLBACK_MSG,
       };
     }
   }

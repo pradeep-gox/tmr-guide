@@ -8,8 +8,7 @@ export default defineConfig({
       entry: "src/index.ts",
       name: "TMRGuide",
       formats: ["es", "iife"],
-      fileName: (format) =>
-        format === "iife" ? "tmr-guide.iife.js" : "tmr-guide.esm.js",
+      fileName: (format) => (format === "iife" ? "tmr-guide.iife.js" : "tmr-guide.esm.js"),
     },
     rollupOptions: {
       output: {

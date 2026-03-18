@@ -116,41 +116,52 @@ export class OwlCharacter implements CharacterRenderer {
 
     // Shadow
     const shadow = document.createElementNS(ns, "ellipse");
-    shadow.setAttribute("cx", "36"); shadow.setAttribute("cy", "70");
-    shadow.setAttribute("rx", "18"); shadow.setAttribute("ry", "3");
+    shadow.setAttribute("cx", "36");
+    shadow.setAttribute("cy", "70");
+    shadow.setAttribute("rx", "18");
+    shadow.setAttribute("ry", "3");
     shadow.setAttribute("fill", "rgba(0,0,0,0.12)");
     svg.appendChild(shadow);
 
     // Wings — behind body so they peek out on the sides
     const wingL = document.createElementNS(ns, "ellipse");
-    wingL.setAttribute("cx", "15"); wingL.setAttribute("cy", "50");
-    wingL.setAttribute("rx", "9"); wingL.setAttribute("ry", "14");
+    wingL.setAttribute("cx", "15");
+    wingL.setAttribute("cy", "50");
+    wingL.setAttribute("rx", "9");
+    wingL.setAttribute("ry", "14");
     wingL.setAttribute("fill", "#374151");
     svg.appendChild(wingL);
 
     const wingR = document.createElementNS(ns, "ellipse");
-    wingR.setAttribute("cx", "57"); wingR.setAttribute("cy", "50");
-    wingR.setAttribute("rx", "9"); wingR.setAttribute("ry", "14");
+    wingR.setAttribute("cx", "57");
+    wingR.setAttribute("cy", "50");
+    wingR.setAttribute("rx", "9");
+    wingR.setAttribute("ry", "14");
     wingR.setAttribute("fill", "#374151");
     svg.appendChild(wingR);
 
     // Body
     const body = document.createElementNS(ns, "ellipse");
-    body.setAttribute("cx", "36"); body.setAttribute("cy", "54");
-    body.setAttribute("rx", "18"); body.setAttribute("ry", "16");
+    body.setAttribute("cx", "36");
+    body.setAttribute("cy", "54");
+    body.setAttribute("rx", "18");
+    body.setAttribute("ry", "16");
     body.setAttribute("fill", "#1f2937");
     svg.appendChild(body);
 
     // Belly (lighter feathered area)
     const belly = document.createElementNS(ns, "ellipse");
-    belly.setAttribute("cx", "36"); belly.setAttribute("cy", "57");
-    belly.setAttribute("rx", "11"); belly.setAttribute("ry", "12");
+    belly.setAttribute("cx", "36");
+    belly.setAttribute("cy", "57");
+    belly.setAttribute("rx", "11");
+    belly.setAttribute("ry", "12");
     belly.setAttribute("fill", "#374151");
     svg.appendChild(belly);
 
     // Head (large circle)
     const head = document.createElementNS(ns, "circle");
-    head.setAttribute("cx", "36"); head.setAttribute("cy", "26");
+    head.setAttribute("cx", "36");
+    head.setAttribute("cy", "26");
     head.setAttribute("r", "18");
     head.setAttribute("fill", "#1f2937");
     svg.appendChild(head);
@@ -168,58 +179,76 @@ export class OwlCharacter implements CharacterRenderer {
 
     // Eye scleras (white background circles — not animated)
     const scleraL = document.createElementNS(ns, "circle");
-    scleraL.setAttribute("cx", "27"); scleraL.setAttribute("cy", "25");
-    scleraL.setAttribute("r", "8.5"); scleraL.setAttribute("fill", "white");
+    scleraL.setAttribute("cx", "27");
+    scleraL.setAttribute("cy", "25");
+    scleraL.setAttribute("r", "8.5");
+    scleraL.setAttribute("fill", "white");
     svg.appendChild(scleraL);
 
     const scleraR = document.createElementNS(ns, "circle");
-    scleraR.setAttribute("cx", "45"); scleraR.setAttribute("cy", "25");
-    scleraR.setAttribute("r", "8.5"); scleraR.setAttribute("fill", "white");
+    scleraR.setAttribute("cx", "45");
+    scleraR.setAttribute("cy", "25");
+    scleraR.setAttribute("r", "8.5");
+    scleraR.setAttribute("fill", "white");
     svg.appendChild(scleraR);
 
     // Irises (primary color ellipses — ry animated for blinking)
     const eyeL = document.createElementNS(ns, "ellipse");
-    eyeL.setAttribute("cx", "27"); eyeL.setAttribute("cy", "25");
-    eyeL.setAttribute("rx", "6.5"); eyeL.setAttribute("ry", "6.5");
+    eyeL.setAttribute("cx", "27");
+    eyeL.setAttribute("cy", "25");
+    eyeL.setAttribute("rx", "6.5");
+    eyeL.setAttribute("ry", "6.5");
     eyeL.setAttribute("fill", c);
     svg.appendChild(eyeL);
     this.eyeL = eyeL;
 
     const eyeR = document.createElementNS(ns, "ellipse");
-    eyeR.setAttribute("cx", "45"); eyeR.setAttribute("cy", "25");
-    eyeR.setAttribute("rx", "6.5"); eyeR.setAttribute("ry", "6.5");
+    eyeR.setAttribute("cx", "45");
+    eyeR.setAttribute("cy", "25");
+    eyeR.setAttribute("rx", "6.5");
+    eyeR.setAttribute("ry", "6.5");
     eyeR.setAttribute("fill", c);
     svg.appendChild(eyeR);
     this.eyeR = eyeR;
 
     // Pupils (dark, drawn on top of irises)
     const pupilL = document.createElementNS(ns, "circle");
-    pupilL.setAttribute("cx", "27"); pupilL.setAttribute("cy", "25");
-    pupilL.setAttribute("r", "3"); pupilL.setAttribute("fill", "#111827");
+    pupilL.setAttribute("cx", "27");
+    pupilL.setAttribute("cy", "25");
+    pupilL.setAttribute("r", "3");
+    pupilL.setAttribute("fill", "#111827");
     svg.appendChild(pupilL);
 
     const pupilR = document.createElementNS(ns, "circle");
-    pupilR.setAttribute("cx", "45"); pupilR.setAttribute("cy", "25");
-    pupilR.setAttribute("r", "3"); pupilR.setAttribute("fill", "#111827");
+    pupilR.setAttribute("cx", "45");
+    pupilR.setAttribute("cy", "25");
+    pupilR.setAttribute("r", "3");
+    pupilR.setAttribute("fill", "#111827");
     svg.appendChild(pupilR);
 
     // Eye shines
     const shineL = document.createElementNS(ns, "circle");
-    shineL.setAttribute("cx", "29"); shineL.setAttribute("cy", "23");
-    shineL.setAttribute("r", "1.5"); shineL.setAttribute("fill", "white");
+    shineL.setAttribute("cx", "29");
+    shineL.setAttribute("cy", "23");
+    shineL.setAttribute("r", "1.5");
+    shineL.setAttribute("fill", "white");
     svg.appendChild(shineL);
     this.eyeShineL = shineL;
 
     const shineR = document.createElementNS(ns, "circle");
-    shineR.setAttribute("cx", "47"); shineR.setAttribute("cy", "23");
-    shineR.setAttribute("r", "1.5"); shineR.setAttribute("fill", "white");
+    shineR.setAttribute("cx", "47");
+    shineR.setAttribute("cy", "23");
+    shineR.setAttribute("r", "1.5");
+    shineR.setAttribute("fill", "white");
     svg.appendChild(shineR);
     this.eyeShineR = shineR;
 
     // Beak (amber rect — animated height for talking)
     const mouth = document.createElementNS(ns, "rect");
-    mouth.setAttribute("x", "32"); mouth.setAttribute("y", "32");
-    mouth.setAttribute("width", "8"); mouth.setAttribute("height", "5");
+    mouth.setAttribute("x", "32");
+    mouth.setAttribute("y", "32");
+    mouth.setAttribute("width", "8");
+    mouth.setAttribute("height", "5");
     mouth.setAttribute("rx", "2.5");
     mouth.setAttribute("fill", "#f59e0b");
     svg.appendChild(mouth);
@@ -227,15 +256,19 @@ export class OwlCharacter implements CharacterRenderer {
 
     // Feet
     const footL = document.createElementNS(ns, "rect");
-    footL.setAttribute("x", "25"); footL.setAttribute("y", "67");
-    footL.setAttribute("width", "9"); footL.setAttribute("height", "4");
+    footL.setAttribute("x", "25");
+    footL.setAttribute("y", "67");
+    footL.setAttribute("width", "9");
+    footL.setAttribute("height", "4");
     footL.setAttribute("rx", "2");
     footL.setAttribute("fill", c);
     svg.appendChild(footL);
 
     const footR = document.createElementNS(ns, "rect");
-    footR.setAttribute("x", "38"); footR.setAttribute("y", "67");
-    footR.setAttribute("width", "9"); footR.setAttribute("height", "4");
+    footR.setAttribute("x", "38");
+    footR.setAttribute("y", "67");
+    footR.setAttribute("width", "9");
+    footR.setAttribute("height", "4");
     footR.setAttribute("rx", "2");
     footR.setAttribute("fill", c);
     svg.appendChild(footR);
@@ -276,8 +309,7 @@ export class OwlCharacter implements CharacterRenderer {
         const dist = 28 + Math.random() * 16;
         dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
         dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
-        dot.style.backgroundColor =
-          SPARKLE_COLORS[i % SPARKLE_COLORS.length];
+        dot.style.backgroundColor = SPARKLE_COLORS[i % SPARKLE_COLORS.length];
         dot.style.top = "20px";
         dot.style.left = "28px";
         this.inner!.appendChild(dot);

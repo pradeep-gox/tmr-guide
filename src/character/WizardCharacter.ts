@@ -55,7 +55,10 @@ export class WizardCharacter implements CharacterRenderer {
 
   destroy(): void {
     this.stopMouthAnim();
-    if (this.blinkTimer) { clearTimeout(this.blinkTimer); this.blinkTimer = null; }
+    if (this.blinkTimer) {
+      clearTimeout(this.blinkTimer);
+      this.blinkTimer = null;
+    }
     this.container = null;
     this.inner = null;
     this.svg = null;
@@ -67,10 +70,13 @@ export class WizardCharacter implements CharacterRenderer {
   // ─── private ───────────────────────────────────────────────────
 
   private scheduleBlink(): void {
-    this.blinkTimer = setTimeout(() => {
-      this.blink();
-      this.scheduleBlink();
-    }, 2500 + Math.random() * 3500);
+    this.blinkTimer = setTimeout(
+      () => {
+        this.blink();
+        this.scheduleBlink();
+      },
+      2500 + Math.random() * 3500,
+    );
   }
 
   private blink(): void {
@@ -107,71 +113,122 @@ export class WizardCharacter implements CharacterRenderer {
     };
 
     // Shadow
-    svg.appendChild(el("ellipse", { cx:"36", cy:"70", rx:"14", ry:"3", fill:"rgba(0,0,0,0.12)" }));
+    svg.appendChild(
+      el("ellipse", { cx: "36", cy: "70", rx: "14", ry: "3", fill: "rgba(0,0,0,0.12)" }),
+    );
 
     // Staff (left side)
-    svg.appendChild(el("rect", { x:"6", y:"22", width:"4", height:"46", rx:"2", fill:"#4b5563" }));
+    svg.appendChild(
+      el("rect", { x: "6", y: "22", width: "4", height: "46", rx: "2", fill: "#4b5563" }),
+    );
 
     // Staff orb
-    svg.appendChild(el("circle", { cx:"8", cy:"19", r:"7", fill:c }));
-    svg.appendChild(el("circle", { cx:"6", cy:"17", r:"2", fill:"rgba(255,255,255,0.45)" }));
+    svg.appendChild(el("circle", { cx: "8", cy: "19", r: "7", fill: c }));
+    svg.appendChild(el("circle", { cx: "6", cy: "17", r: "2", fill: "rgba(255,255,255,0.45)" }));
 
     // Sleeves (behind robe)
-    svg.appendChild(el("ellipse", { cx:"13", cy:"46", rx:"8", ry:"10", fill:"#374151" }));
-    svg.appendChild(el("ellipse", { cx:"59", cy:"46", rx:"8", ry:"10", fill:"#374151" }));
+    svg.appendChild(el("ellipse", { cx: "13", cy: "46", rx: "8", ry: "10", fill: "#374151" }));
+    svg.appendChild(el("ellipse", { cx: "59", cy: "46", rx: "8", ry: "10", fill: "#374151" }));
 
     // Robe
-    svg.appendChild(el("rect", { x:"16", y:"34", width:"40", height:"36", rx:"10", fill:"#1f2937" }));
+    svg.appendChild(
+      el("rect", { x: "16", y: "34", width: "40", height: "36", rx: "10", fill: "#1f2937" }),
+    );
 
     // Robe hem accent
-    svg.appendChild(el("rect", { x:"16", y:"34", width:"40", height:"5", rx:"4", fill:c, opacity:"0.25" }));
+    svg.appendChild(
+      el("rect", { x: "16", y: "34", width: "40", height: "5", rx: "4", fill: c, opacity: "0.25" }),
+    );
 
     // Hat cone
-    svg.appendChild(el("polygon", { points:"36,1 52,14 20,14", fill:c }));
+    svg.appendChild(el("polygon", { points: "36,1 52,14 20,14", fill: c }));
 
     // Hat brim
-    svg.appendChild(el("ellipse", { cx:"36", cy:"14", rx:"20", ry:"4", fill:c }));
+    svg.appendChild(el("ellipse", { cx: "36", cy: "14", rx: "20", ry: "4", fill: c }));
 
     // Stars on hat
-    svg.appendChild(el("circle", { cx:"36", cy:"2", r:"2.5", fill:"white" }));
-    svg.appendChild(el("circle", { cx:"42", cy:"7", r:"1.5", fill:"rgba(255,255,255,0.65)" }));
-    svg.appendChild(el("circle", { cx:"30", cy:"7", r:"1", fill:"rgba(255,255,255,0.45)" }));
+    svg.appendChild(el("circle", { cx: "36", cy: "2", r: "2.5", fill: "white" }));
+    svg.appendChild(el("circle", { cx: "42", cy: "7", r: "1.5", fill: "rgba(255,255,255,0.65)" }));
+    svg.appendChild(el("circle", { cx: "30", cy: "7", r: "1", fill: "rgba(255,255,255,0.45)" }));
 
     // Head
-    svg.appendChild(el("circle", { cx:"36", cy:"27", r:"14", fill:"#1f2937" }));
+    svg.appendChild(el("circle", { cx: "36", cy: "27", r: "14", fill: "#1f2937" }));
 
     // Bushy eyebrows
-    const browL = el("rect", { x:"26", y:"20", width:"9", height:"2.5", rx:"1.2", fill:"#e5e7eb" });
+    const browL = el("rect", {
+      x: "26",
+      y: "20",
+      width: "9",
+      height: "2.5",
+      rx: "1.2",
+      fill: "#e5e7eb",
+    });
     browL.setAttribute("transform", "rotate(-8 30 21)");
     svg.appendChild(browL);
 
-    const browR = el("rect", { x:"37", y:"20", width:"9", height:"2.5", rx:"1.2", fill:"#e5e7eb" });
+    const browR = el("rect", {
+      x: "37",
+      y: "20",
+      width: "9",
+      height: "2.5",
+      rx: "1.2",
+      fill: "#e5e7eb",
+    });
     browR.setAttribute("transform", "rotate(8 42 21)");
     svg.appendChild(browR);
 
     // Eyes (primary color, blink-animated)
-    const eyeL = el("ellipse", { cx:"30", cy:"26", rx:"3.5", ry:"3.5", fill:c }) as SVGEllipseElement;
+    const eyeL = el("ellipse", {
+      cx: "30",
+      cy: "26",
+      rx: "3.5",
+      ry: "3.5",
+      fill: c,
+    }) as SVGEllipseElement;
     svg.appendChild(eyeL);
     this.eyeL = eyeL;
 
-    const eyeR = el("ellipse", { cx:"42", cy:"26", rx:"3.5", ry:"3.5", fill:c }) as SVGEllipseElement;
+    const eyeR = el("ellipse", {
+      cx: "42",
+      cy: "26",
+      rx: "3.5",
+      ry: "3.5",
+      fill: c,
+    }) as SVGEllipseElement;
     svg.appendChild(eyeR);
     this.eyeR = eyeR;
 
     // Eye shines
-    const shineL = el("circle", { cx:"31.5", cy:"24.5", r:"1.2", fill:"white" }) as SVGCircleElement;
+    const shineL = el("circle", {
+      cx: "31.5",
+      cy: "24.5",
+      r: "1.2",
+      fill: "white",
+    }) as SVGCircleElement;
     svg.appendChild(shineL);
     this.eyeShineL = shineL;
 
-    const shineR = el("circle", { cx:"43.5", cy:"24.5", r:"1.2", fill:"white" }) as SVGCircleElement;
+    const shineR = el("circle", {
+      cx: "43.5",
+      cy: "24.5",
+      r: "1.2",
+      fill: "white",
+    }) as SVGCircleElement;
     svg.appendChild(shineR);
     this.eyeShineR = shineR;
 
     // Beard (white/light, covers lower face + flows over robe collar)
-    svg.appendChild(el("ellipse", { cx:"36", cy:"37", rx:"10", ry:"8", fill:"#e5e7eb" }));
+    svg.appendChild(el("ellipse", { cx: "36", cy: "37", rx: "10", ry: "8", fill: "#e5e7eb" }));
 
     // Mouth (inside beard area, mouthEl)
-    const mouth = el("rect", { x:"31", y:"36", width:"10", height:"3", rx:"1.5", fill:"#9ca3af" }) as SVGRectElement;
+    const mouth = el("rect", {
+      x: "31",
+      y: "36",
+      width: "10",
+      height: "3",
+      rx: "1.5",
+      fill: "#9ca3af",
+    }) as SVGRectElement;
     svg.appendChild(mouth);
     this.mouthEl = mouth;
 
@@ -189,8 +246,14 @@ export class WizardCharacter implements CharacterRenderer {
   }
 
   private stopMouthAnim(): void {
-    if (this.mouthTimer) { clearInterval(this.mouthTimer); this.mouthTimer = null; }
-    if (this.mouthEl) { this.mouthEl.setAttribute("height", "3"); this.mouthEl.setAttribute("y", "36"); }
+    if (this.mouthTimer) {
+      clearInterval(this.mouthTimer);
+      this.mouthTimer = null;
+    }
+    if (this.mouthEl) {
+      this.mouthEl.setAttribute("height", "3");
+      this.mouthEl.setAttribute("y", "36");
+    }
     this.mouthOpen = false;
   }
 

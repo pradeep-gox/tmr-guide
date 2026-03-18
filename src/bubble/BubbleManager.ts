@@ -322,35 +322,41 @@ export class BubbleManager {
     for (const line of lines) {
       const listMatch = line.match(/^[-*]\s+(.+)/);
       if (listMatch) {
-        if (!inList) { out.push("<ul>"); inList = true; }
+        if (!inList) {
+          out.push("<ul>");
+          inList = true;
+        }
         out.push(`<li>${this.inlineMarkdown(listMatch[1])}</li>`);
       } else {
-        if (inList) { out.push("</ul>"); inList = false; }
+        if (inList) {
+          out.push("</ul>");
+          inList = false;
+        }
         out.push(this.inlineMarkdown(line));
       }
     }
     if (inList) out.push("</ul>");
 
     // Join lines: don't put <br> around list tags
-    return out.join("\n")
+    return out
+      .join("\n")
       .replace(/<\/ul>\n/g, "</ul>")
       .replace(/\n<ul>/g, "<ul>")
       .replace(/\n/g, "<br>");
   }
 
   private inlineMarkdown(text: string): string {
-    return text
-      // Inline code (before bold/italic so backticks aren't processed further)
-      .replace(/`([^`]+)`/g, '<code class="tmrg-code">$1</code>')
-      // Bold
-      .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
-      // Italic (avoid matching inside already-replaced bold)
-      .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-      // Links
-      .replace(
-        /\[([^\]]+)\]\(([^)]+)\)/g,
-        '<a href="$2" target="_blank" rel="noopener">$1</a>',
-      );
+    return (
+      text
+        // Inline code (before bold/italic so backticks aren't processed further)
+        .replace(/`([^`]+)`/g, '<code class="tmrg-code">$1</code>')
+        // Bold
+        .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
+        // Italic (avoid matching inside already-replaced bold)
+        .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+        // Links
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    );
   }
 
   private renderFollowUps(followUps: string[]): void {
@@ -415,8 +421,7 @@ export class BubbleManager {
     thumbUp.addEventListener("click", () => {
       this.onFeedback?.("up", this.lastQuestion);
       if (this.feedbackEl) {
-        this.feedbackEl.innerHTML =
-          '<span class="tmrg-feedback-done">Thanks! 👍</span>';
+        this.feedbackEl.innerHTML = '<span class="tmrg-feedback-done">Thanks! 👍</span>';
       }
     });
 

@@ -6,7 +6,7 @@ const SPARKLE_COLORS = ["#ff6700", "#ffd700", "#ff4fa3", "#4fc3f7"];
 // Head path states — Pac-Man / quarter-circle centered at (36, 25), R=20
 // Mouth opens toward the right (3 o'clock), ±angle/2 from horizontal.
 // PATH_OPEN is the TMR logo shape (90° quarter removed).
-const PATH_OPEN   = "M 36,25 L 50,11 A 20,20 0 1 0 50,39 Z"; // 90° open  — logo shape
+const PATH_OPEN = "M 36,25 L 50,11 A 20,20 0 1 0 50,39 Z"; // 90° open  — logo shape
 const PATH_MEDIUM = "M 36,25 L 55,17 A 20,20 0 1 0 55,33 Z"; // 45° open  — mid-chomp
 const PATH_CLOSED = "M 36,25 L 56,24 A 20,20 0 1 0 56,26 Z"; //  5° open  — nearly closed
 
@@ -69,7 +69,10 @@ export class SliceCharacter implements CharacterRenderer {
 
   destroy(): void {
     this.stopChomp();
-    if (this.blinkTimer) { clearTimeout(this.blinkTimer); this.blinkTimer = null; }
+    if (this.blinkTimer) {
+      clearTimeout(this.blinkTimer);
+      this.blinkTimer = null;
+    }
     this.container = null;
     this.inner = null;
     this.svg = null;
@@ -81,10 +84,13 @@ export class SliceCharacter implements CharacterRenderer {
   // ─── private ───────────────────────────────────────────────────
 
   private scheduleBlink(): void {
-    this.blinkTimer = setTimeout(() => {
-      this.blink();
-      this.scheduleBlink();
-    }, 2500 + Math.random() * 3500);
+    this.blinkTimer = setTimeout(
+      () => {
+        this.blink();
+        this.scheduleBlink();
+      },
+      2500 + Math.random() * 3500,
+    );
   }
 
   /** Close the irises (ry → 0.6) for 120ms then reopen. */
@@ -122,14 +128,20 @@ export class SliceCharacter implements CharacterRenderer {
     };
 
     // Shadow
-    svg.appendChild(el("ellipse", { cx:"36", cy:"70", rx:"16", ry:"3", fill:"rgba(0,0,0,0.12)" }));
+    svg.appendChild(
+      el("ellipse", { cx: "36", cy: "70", rx: "16", ry: "3", fill: "rgba(0,0,0,0.12)" }),
+    );
 
     // Body (below the head circle)
-    svg.appendChild(el("rect", { x:"24", y:"44", width:"24", height:"13", rx:"7", fill:c }));
+    svg.appendChild(el("rect", { x: "24", y: "44", width: "24", height: "13", rx: "7", fill: c }));
 
     // Legs
-    svg.appendChild(el("rect", { x:"25", y:"55", width:"8", height:"9", rx:"4", fill:"#374151" }));
-    svg.appendChild(el("rect", { x:"39", y:"55", width:"8", height:"9", rx:"4", fill:"#374151" }));
+    svg.appendChild(
+      el("rect", { x: "25", y: "55", width: "8", height: "9", rx: "4", fill: "#374151" }),
+    );
+    svg.appendChild(
+      el("rect", { x: "39", y: "55", width: "8", height: "9", rx: "4", fill: "#374151" }),
+    );
 
     // ── HEAD (animated Pac-Man path) ──────────────────────────────
     // Starts in logo shape — 90° quarter removed from the right side.
@@ -139,24 +151,46 @@ export class SliceCharacter implements CharacterRenderer {
     this.headPath = headPath;
 
     // Eye scleras (white circles — behind irises)
-    svg.appendChild(el("circle", { cx:"24", cy:"21", r:"4.5", fill:"white" }));
-    svg.appendChild(el("circle", { cx:"30", cy:"13", r:"4.5", fill:"white" }));
+    svg.appendChild(el("circle", { cx: "24", cy: "21", r: "4.5", fill: "white" }));
+    svg.appendChild(el("circle", { cx: "30", cy: "13", r: "4.5", fill: "white" }));
 
     // Irises (dark ellipses — ry animated for blinking)
-    const eyeL = el("ellipse", { cx:"24", cy:"21", rx:"3", ry:"3", fill:"#1f2937" }) as SVGEllipseElement;
+    const eyeL = el("ellipse", {
+      cx: "24",
+      cy: "21",
+      rx: "3",
+      ry: "3",
+      fill: "#1f2937",
+    }) as SVGEllipseElement;
     svg.appendChild(eyeL);
     this.eyeL = eyeL;
 
-    const eyeR = el("ellipse", { cx:"30", cy:"14", rx:"3", ry:"3", fill:"#1f2937" }) as SVGEllipseElement;
+    const eyeR = el("ellipse", {
+      cx: "30",
+      cy: "14",
+      rx: "3",
+      ry: "3",
+      fill: "#1f2937",
+    }) as SVGEllipseElement;
     svg.appendChild(eyeR);
     this.eyeR = eyeR;
 
     // Eye shines
-    const shineL = el("circle", { cx:"25.5", cy:"19.5", r:"1.2", fill:"white" }) as SVGCircleElement;
+    const shineL = el("circle", {
+      cx: "25.5",
+      cy: "19.5",
+      r: "1.2",
+      fill: "white",
+    }) as SVGCircleElement;
     svg.appendChild(shineL);
     this.eyeShineL = shineL;
 
-    const shineR = el("circle", { cx:"31.5", cy:"12.5", r:"1.2", fill:"white" }) as SVGCircleElement;
+    const shineR = el("circle", {
+      cx: "31.5",
+      cy: "12.5",
+      r: "1.2",
+      fill: "white",
+    }) as SVGCircleElement;
     svg.appendChild(shineR);
     this.eyeShineR = shineR;
 
@@ -174,7 +208,10 @@ export class SliceCharacter implements CharacterRenderer {
   }
 
   private stopChomp(): void {
-    if (this.chompTimer) { clearInterval(this.chompTimer); this.chompTimer = null; }
+    if (this.chompTimer) {
+      clearInterval(this.chompTimer);
+      this.chompTimer = null;
+    }
     // Return to logo shape
     this.headPath?.setAttribute("d", PATH_OPEN);
     this.chompOpen = false;

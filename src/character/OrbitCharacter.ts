@@ -57,10 +57,7 @@ export class OrbitCharacter implements CharacterRenderer {
     } else {
       this.eyeL?.setAttribute("cy", "31");
       this.eyeR?.setAttribute("cy", "31");
-      this.orbitSpeed =
-        state === "celebrating" ? 4.0
-        : state === "talking"   ? 1.4
-        : 0.8;
+      this.orbitSpeed = state === "celebrating" ? 4.0 : state === "talking" ? 1.4 : 0.8;
     }
 
     if (state === "talking") {
@@ -75,7 +72,10 @@ export class OrbitCharacter implements CharacterRenderer {
   destroy(): void {
     this.stopMouthAnim();
     this.stopOrbit();
-    if (this.blinkTimer) { clearTimeout(this.blinkTimer); this.blinkTimer = null; }
+    if (this.blinkTimer) {
+      clearTimeout(this.blinkTimer);
+      this.blinkTimer = null;
+    }
     this.container = null;
     this.inner = null;
     this.svg = null;
@@ -90,10 +90,13 @@ export class OrbitCharacter implements CharacterRenderer {
   // ─── private ───────────────────────────────────────────────────
 
   private scheduleBlink(): void {
-    this.blinkTimer = setTimeout(() => {
-      this.blink();
-      this.scheduleBlink();
-    }, 2500 + Math.random() * 3500);
+    this.blinkTimer = setTimeout(
+      () => {
+        this.blink();
+        this.scheduleBlink();
+      },
+      2500 + Math.random() * 3500,
+    );
   }
 
   private blink(): void {
@@ -121,7 +124,10 @@ export class OrbitCharacter implements CharacterRenderer {
   }
 
   private stopOrbit(): void {
-    if (this.rafId !== null) { cancelAnimationFrame(this.rafId); this.rafId = null; }
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
   }
 
   private updateSatellites(): void {
@@ -131,12 +137,12 @@ export class OrbitCharacter implements CharacterRenderer {
       this.sat1.setAttribute("cy", String(OY + 23 * Math.sin(deg)));
     }
     if (this.sat2) {
-      const a2 = ((this.orbitAngle * 0.7) + 120) * Math.PI / 180;
+      const a2 = ((this.orbitAngle * 0.7 + 120) * Math.PI) / 180;
       this.sat2.setAttribute("cx", String(OX + 31 * Math.cos(a2)));
       this.sat2.setAttribute("cy", String(OY + 31 * Math.sin(a2)));
     }
     if (this.sat3) {
-      const a3 = ((this.orbitAngle * 0.5) + 240) * Math.PI / 180;
+      const a3 = ((this.orbitAngle * 0.5 + 240) * Math.PI) / 180;
       this.sat3.setAttribute("cx", String(OX + 38 * Math.cos(a3)));
       this.sat3.setAttribute("cy", String(OY + 38 * Math.sin(a3)));
     }
@@ -163,51 +169,108 @@ export class OrbitCharacter implements CharacterRenderer {
     };
 
     // Shadow
-    svg.appendChild(el("ellipse", { cx:"36", cy:"70", rx:"18", ry:"3", fill:"rgba(0,0,0,0.12)" }));
+    svg.appendChild(
+      el("ellipse", { cx: "36", cy: "70", rx: "18", ry: "3", fill: "rgba(0,0,0,0.12)" }),
+    );
 
     // ── Satellites (drawn first — behind the head) ─────────────────
     // Initial positions placed on the orbit radii; rAF will move them.
-    const sat1 = el("circle", { cx: String(OX + 23), cy: String(OY), r:"4", fill:c }) as SVGCircleElement;
+    const sat1 = el("circle", {
+      cx: String(OX + 23),
+      cy: String(OY),
+      r: "4",
+      fill: c,
+    }) as SVGCircleElement;
     svg.appendChild(sat1);
     this.sat1 = sat1;
 
-    const sat2 = el("circle", { cx: String(OX - 15), cy: String(OY - 27), r:"3", fill:c, opacity:"0.8" }) as SVGCircleElement;
+    const sat2 = el("circle", {
+      cx: String(OX - 15),
+      cy: String(OY - 27),
+      r: "3",
+      fill: c,
+      opacity: "0.8",
+    }) as SVGCircleElement;
     svg.appendChild(sat2);
     this.sat2 = sat2;
 
-    const sat3 = el("circle", { cx: String(OX - 19), cy: String(OY + 33), r:"2.5", fill:c, opacity:"0.65" }) as SVGCircleElement;
+    const sat3 = el("circle", {
+      cx: String(OX - 19),
+      cy: String(OY + 33),
+      r: "2.5",
+      fill: c,
+      opacity: "0.65",
+    }) as SVGCircleElement;
     svg.appendChild(sat3);
     this.sat3 = sat3;
 
     // ── Head (planet body) ─────────────────────────────────────────
-    svg.appendChild(el("circle", { cx:"36", cy:"33", r:"20", fill:"#1f2937" }));
+    svg.appendChild(el("circle", { cx: "36", cy: "33", r: "20", fill: "#1f2937" }));
 
     // Subtle equatorial band
-    svg.appendChild(el("ellipse", {
-      cx:"36", cy:"33", rx:"20", ry:"5",
-      fill:"none", stroke:c, "stroke-width":"1.2", opacity:"0.25",
-    }));
+    svg.appendChild(
+      el("ellipse", {
+        cx: "36",
+        cy: "33",
+        rx: "20",
+        ry: "5",
+        fill: "none",
+        stroke: c,
+        "stroke-width": "1.2",
+        opacity: "0.25",
+      }),
+    );
 
     // Eyes (primary color, blink-animated)
-    const eyeL = el("ellipse", { cx:"28", cy:"31", rx:"4", ry:"4", fill:c }) as SVGEllipseElement;
+    const eyeL = el("ellipse", {
+      cx: "28",
+      cy: "31",
+      rx: "4",
+      ry: "4",
+      fill: c,
+    }) as SVGEllipseElement;
     svg.appendChild(eyeL);
     this.eyeL = eyeL;
 
-    const eyeR = el("ellipse", { cx:"44", cy:"31", rx:"4", ry:"4", fill:c }) as SVGEllipseElement;
+    const eyeR = el("ellipse", {
+      cx: "44",
+      cy: "31",
+      rx: "4",
+      ry: "4",
+      fill: c,
+    }) as SVGEllipseElement;
     svg.appendChild(eyeR);
     this.eyeR = eyeR;
 
     // Eye shines
-    const shineL = el("circle", { cx:"30", cy:"29", r:"1.5", fill:"white" }) as SVGCircleElement;
+    const shineL = el("circle", {
+      cx: "30",
+      cy: "29",
+      r: "1.5",
+      fill: "white",
+    }) as SVGCircleElement;
     svg.appendChild(shineL);
     this.eyeShineL = shineL;
 
-    const shineR = el("circle", { cx:"46", cy:"29", r:"1.5", fill:"white" }) as SVGCircleElement;
+    const shineR = el("circle", {
+      cx: "46",
+      cy: "29",
+      r: "1.5",
+      fill: "white",
+    }) as SVGCircleElement;
     svg.appendChild(shineR);
     this.eyeShineR = shineR;
 
     // Mouth (mouthEl)
-    const mouth = el("rect", { x:"28", y:"38", width:"16", height:"4", rx:"2", fill:c, opacity:"0.55" }) as SVGRectElement;
+    const mouth = el("rect", {
+      x: "28",
+      y: "38",
+      width: "16",
+      height: "4",
+      rx: "2",
+      fill: c,
+      opacity: "0.55",
+    }) as SVGRectElement;
     svg.appendChild(mouth);
     this.mouthEl = mouth;
 
@@ -225,8 +288,14 @@ export class OrbitCharacter implements CharacterRenderer {
   }
 
   private stopMouthAnim(): void {
-    if (this.mouthTimer) { clearInterval(this.mouthTimer); this.mouthTimer = null; }
-    if (this.mouthEl) { this.mouthEl.setAttribute("height", "4"); this.mouthEl.setAttribute("y", "38"); }
+    if (this.mouthTimer) {
+      clearInterval(this.mouthTimer);
+      this.mouthTimer = null;
+    }
+    if (this.mouthEl) {
+      this.mouthEl.setAttribute("height", "4");
+      this.mouthEl.setAttribute("y", "38");
+    }
     this.mouthOpen = false;
   }
 

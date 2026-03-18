@@ -2,6 +2,9 @@
   "name": "tmr-guide",
   "version": "0.1.0",
   "description": "Clippy-style AI guide SDK for TMR frontends",
+  "files": [
+    "dist"
+  ],
   "main": "dist/tmr-guide.esm.js",
   "module": "dist/tmr-guide.esm.js",
   "types": "dist/index.d.ts",
@@ -12,14 +15,15 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist"],
   "scripts": {
     "build": "vite build && tsc --emitDeclarationOnly",
-    "dev": "vite build --watch"
+    "dev": "vite build --watch",
+    "format": "oxfmt"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "vite": "^5.2.0",
-    "vite-plugin-dts": "^3.9.0"
+    "oxfmt": "^0.41.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21",
+    "vite-plugin-dts": "^3.9.1"
   }
 }
