@@ -79,6 +79,8 @@ export class SliceCharacter implements CharacterRenderer {
     this.headPath = null;
     this.eyeL = null;
     this.eyeR = null;
+    this.eyeShineL = null;
+    this.eyeShineR = null;
   }
 
   // ─── private ───────────────────────────────────────────────────
@@ -150,9 +152,9 @@ export class SliceCharacter implements CharacterRenderer {
     svg.appendChild(headPath);
     this.headPath = headPath;
 
-    // Eye scleras (white circles — behind irises)
+    // Eye scleras (white circles — behind irises, centered on same coords as irises)
     svg.appendChild(el("circle", { cx: "24", cy: "21", r: "4.5", fill: "white" }));
-    svg.appendChild(el("circle", { cx: "30", cy: "13", r: "4.5", fill: "white" }));
+    svg.appendChild(el("circle", { cx: "30", cy: "14", r: "4.5", fill: "white" }));
 
     // Irises (dark ellipses — ry animated for blinking)
     const eyeL = el("ellipse", {
@@ -223,7 +225,7 @@ export class SliceCharacter implements CharacterRenderer {
       setTimeout(() => {
         const dot = document.createElement("div");
         dot.className = "tmrg-sparkle";
-        const rad = ((i / 6) * 360 * Math.PI) / 180;
+        const rad = ((i / 6) * 2 * Math.PI);
         const dist = 28 + Math.random() * 16;
         dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
         dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);

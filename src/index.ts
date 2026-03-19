@@ -111,9 +111,16 @@ class TMRGuideSDK {
       (rating, question) => this.config?.onFeedback?.(rating, question),
     );
     // Re-clamp position after typewriter so long AI responses never overflow
-    this.bubble.setRepositionFn(() => this.bubble!.positionNear(this.charX, this.charY));
+    this.bubble.setRepositionFn(() =>
+      this.bubble!.positionNear(this.charX, this.charY),
+    );
 
-    this.ai = new AIManager(config.apiEndpoint, config.userId, config.emailId);
+    this.ai = new AIManager(
+      config.apiEndpoint,
+      config.apiKey,
+      config.userId,
+      config.emailId,
+    );
     this.tourMgr = new TourManager();
 
     // Toggle button (enable/disable guide)
@@ -154,17 +161,24 @@ class TMRGuideSDK {
 
     // Warn in development if the target selector does not match any element
     if (options.target && !document.querySelector(options.target)) {
-      console.warn(`[tmr-guide] target "${options.target}" not found for step "${options.stepId}"`);
+      console.warn(
+        `[tmr-guide] target "${options.target}" not found for step "${options.stepId}"`,
+      );
     }
 
     // 1. Walk character toward target (or idle corner when no target)
     const rect = options.target ? getRect(options.target) : null;
     const targetPos = rect
-      ? computeCharacterPosition(rect, options.position ?? "right", this.charSize)
+      ? computeCharacterPosition(
+          rect,
+          options.position ?? "right",
+          this.charSize,
+        )
       : this.cornerPosition();
 
     const isAlreadyNear =
-      Math.abs(this.charX - targetPos.x) < 4 && Math.abs(this.charY - targetPos.y) < 4;
+      Math.abs(this.charX - targetPos.x) < 4 &&
+      Math.abs(this.charY - targetPos.y) < 4;
 
     if (!isAlreadyNear) {
       this.character!.setState("walking");
@@ -175,7 +189,9 @@ class TMRGuideSDK {
     this.applyCharPosition();
 
     // Tell the bubble which side the target is on so it positions in open space
-    this.bubble!.setTargetCenterX(rect ? rect.left + rect.width / 2 : undefined);
+    this.bubble!.setTargetCenterX(
+      rect ? rect.left + rect.width / 2 : undefined,
+    );
 
     // 2. After walking transition, show bubble + spotlight
     const delay = isAlreadyNear ? 0 : 500;
@@ -254,7 +270,11 @@ class TMRGuideSDK {
     const response = await this.ai!.ask(text, context);
 
     this.character!.setState("talking");
-    this.bubble!.showResponse(response.message, response.followUps ?? [], response.sources ?? []);
+    this.bubble!.showResponse(
+      response.message,
+      response.followUps ?? [],
+      response.sources ?? [],
+    );
     setTimeout(() => this.character!.setState("idle"), 1800);
   }
 
@@ -265,7 +285,9 @@ class TMRGuideSDK {
     this.character!.setState("celebrating");
     if (message) {
       this.bubble!.show(message);
-      requestAnimationFrame(() => this.bubble!.positionNear(this.charX, this.charY));
+      requestAnimationFrame(() =>
+        this.bubble!.positionNear(this.charX, this.charY),
+      );
       this.isVisible = true;
       this.attachClickOutside();
     }
@@ -469,7 +491,11 @@ class TMRGuideSDK {
     if (!this.toggleBtn) return;
     const pos: IdlePosition = this.config?.idlePosition ?? "bottom-right";
     const chip = this.toggleBtn;
-    chip.style.top = chip.style.bottom = chip.style.left = chip.style.right = "auto";
+    chip.style.top =
+      chip.style.bottom =
+      chip.style.left =
+      chip.style.right =
+        "auto";
     const m = "12px";
     switch (pos) {
       case "top-left":
@@ -496,7 +522,10 @@ class TMRGuideSDK {
     this.charContainer.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      this.showContextMenu((e as MouseEvent).clientX, (e as MouseEvent).clientY);
+      this.showContextMenu(
+        (e as MouseEvent).clientX,
+        (e as MouseEvent).clientY,
+      );
     });
   }
 
@@ -564,7 +593,9 @@ class TMRGuideSDK {
         if (this.root && path.includes(this.root)) return;
         this.hide();
       };
-      document.addEventListener("click", this.clickOutsideHandler, { passive: true });
+      document.addEventListener("click", this.clickOutsideHandler, {
+        passive: true,
+      });
     }, 0);
   }
 

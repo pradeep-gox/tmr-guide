@@ -246,8 +246,8 @@ class BotCharacter {
       setTimeout(() => {
         const dot = document.createElement("div");
         dot.className = "tmrg-sparkle";
-        const angle = (i / 6) * 360;
-        const rad = (angle * Math.PI) / 180;
+        const angle = i / 6 * 360;
+        const rad = angle * Math.PI / 180;
         const dist = 28 + Math.random() * 16;
         dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
         dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
@@ -510,8 +510,8 @@ class OwlCharacter {
       setTimeout(() => {
         const dot = document.createElement("div");
         dot.className = "tmrg-sparkle";
-        const angle = (i / 6) * 360;
-        const rad = (angle * Math.PI) / 180;
+        const angle = i / 6 * 360;
+        const rad = angle * Math.PI / 180;
         const dist = 28 + Math.random() * 16;
         dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
         dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
@@ -589,7 +589,7 @@ class AstronautCharacter {
         this.blink();
         this.scheduleBlink();
       },
-      2500 + Math.random() * 3500,
+      2500 + Math.random() * 3500
     );
   }
   blink() {
@@ -622,16 +622,16 @@ class AstronautCharacter {
       return e;
     };
     svg.appendChild(
-      el("ellipse", { cx: "36", cy: "70", rx: "16", ry: "3", fill: "rgba(0,0,0,0.12)" }),
+      el("ellipse", { cx: "36", cy: "70", rx: "16", ry: "3", fill: "rgba(0,0,0,0.12)" })
     );
     svg.appendChild(
-      el("rect", { x: "7", y: "36", width: "12", height: "22", rx: "6", fill: "#d1d5db" }),
+      el("rect", { x: "7", y: "36", width: "12", height: "22", rx: "6", fill: "#d1d5db" })
     );
     svg.appendChild(
-      el("rect", { x: "53", y: "36", width: "12", height: "22", rx: "6", fill: "#d1d5db" }),
+      el("rect", { x: "53", y: "36", width: "12", height: "22", rx: "6", fill: "#d1d5db" })
     );
     svg.appendChild(
-      el("rect", { x: "18", y: "38", width: "36", height: "30", rx: "10", fill: "#e5e7eb" }),
+      el("rect", { x: "18", y: "38", width: "36", height: "30", rx: "10", fill: "#e5e7eb" })
     );
     svg.appendChild(
       el("circle", {
@@ -640,15 +640,15 @@ class AstronautCharacter {
         r: "5.5",
         fill: "none",
         stroke: c,
-        "stroke-width": "1.5",
-      }),
+        "stroke-width": "1.5"
+      })
     );
     svg.appendChild(el("circle", { cx: "36", cy: "48", r: "2.5", fill: c, opacity: "0.6" }));
     svg.appendChild(
-      el("rect", { x: "22", y: "65", width: "11", height: "7", rx: "4", fill: "#d1d5db" }),
+      el("rect", { x: "22", y: "65", width: "11", height: "7", rx: "4", fill: "#d1d5db" })
     );
     svg.appendChild(
-      el("rect", { x: "39", y: "65", width: "11", height: "7", rx: "4", fill: "#d1d5db" }),
+      el("rect", { x: "39", y: "65", width: "11", height: "7", rx: "4", fill: "#d1d5db" })
     );
     svg.appendChild(el("circle", { cx: "36", cy: "26", r: "18", fill: "#e5e7eb" }));
     svg.appendChild(
@@ -658,11 +658,11 @@ class AstronautCharacter {
         r: "17",
         fill: "none",
         stroke: "#d1d5db",
-        "stroke-width": "1.5",
-      }),
+        "stroke-width": "1.5"
+      })
     );
     svg.appendChild(
-      el("rect", { x: "34", y: "8", width: "4", height: "8", rx: "2", fill: "#9ca3af" }),
+      el("rect", { x: "34", y: "8", width: "4", height: "8", rx: "2", fill: "#9ca3af" })
     );
     svg.appendChild(el("circle", { cx: "36", cy: "8", r: "3", fill: c }));
     svg.appendChild(el("ellipse", { cx: "36", cy: "28", rx: "13", ry: "11", fill: "#1f2937" }));
@@ -673,19 +673,41 @@ class AstronautCharacter {
         rx: "4",
         ry: "2.5",
         fill: "rgba(255,255,255,0.18)",
-        transform: "rotate(-15 27 21)",
-      }),
+        transform: "rotate(-15 27 21)"
+      })
     );
-    const eyeL = el("ellipse", { cx: "29", cy: "27", rx: "3", ry: "3", fill: c });
+    const eyeL = el("ellipse", {
+      cx: "29",
+      cy: "27",
+      rx: "3",
+      ry: "3",
+      fill: c
+    });
     svg.appendChild(eyeL);
     this.eyeL = eyeL;
-    const eyeR = el("ellipse", { cx: "43", cy: "27", rx: "3", ry: "3", fill: c });
+    const eyeR = el("ellipse", {
+      cx: "43",
+      cy: "27",
+      rx: "3",
+      ry: "3",
+      fill: c
+    });
     svg.appendChild(eyeR);
     this.eyeR = eyeR;
-    const shineL = el("circle", { cx: "30.5", cy: "25.5", r: "1.2", fill: "white" });
+    const shineL = el("circle", {
+      cx: "30.5",
+      cy: "25.5",
+      r: "1.2",
+      fill: "white"
+    });
     svg.appendChild(shineL);
     this.eyeShineL = shineL;
-    const shineR = el("circle", { cx: "44.5", cy: "25.5", r: "1.2", fill: "white" });
+    const shineR = el("circle", {
+      cx: "44.5",
+      cy: "25.5",
+      r: "1.2",
+      fill: "white"
+    });
     svg.appendChild(shineR);
     this.eyeShineR = shineR;
     const mouth = el("rect", {
@@ -695,7 +717,7 @@ class AstronautCharacter {
       height: "3",
       rx: "1.5",
       fill: c,
-      opacity: "0.6",
+      opacity: "0.6"
     });
     svg.appendChild(mouth);
     this.mouthEl = mouth;
@@ -727,7 +749,7 @@ class AstronautCharacter {
       setTimeout(() => {
         const dot = document.createElement("div");
         dot.className = "tmrg-sparkle";
-        const rad = ((i / 6) * 360 * Math.PI) / 180;
+        const rad = i / 6 * 360 * Math.PI / 180;
         const dist = 28 + Math.random() * 16;
         dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
         dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
@@ -805,7 +827,7 @@ class WizardCharacter {
         this.blink();
         this.scheduleBlink();
       },
-      2500 + Math.random() * 3500,
+      2500 + Math.random() * 3500
     );
   }
   blink() {
@@ -838,20 +860,20 @@ class WizardCharacter {
       return e;
     };
     svg.appendChild(
-      el("ellipse", { cx: "36", cy: "70", rx: "14", ry: "3", fill: "rgba(0,0,0,0.12)" }),
+      el("ellipse", { cx: "36", cy: "70", rx: "14", ry: "3", fill: "rgba(0,0,0,0.12)" })
     );
     svg.appendChild(
-      el("rect", { x: "6", y: "22", width: "4", height: "46", rx: "2", fill: "#4b5563" }),
+      el("rect", { x: "6", y: "22", width: "4", height: "46", rx: "2", fill: "#4b5563" })
     );
     svg.appendChild(el("circle", { cx: "8", cy: "19", r: "7", fill: c }));
     svg.appendChild(el("circle", { cx: "6", cy: "17", r: "2", fill: "rgba(255,255,255,0.45)" }));
     svg.appendChild(el("ellipse", { cx: "13", cy: "46", rx: "8", ry: "10", fill: "#374151" }));
     svg.appendChild(el("ellipse", { cx: "59", cy: "46", rx: "8", ry: "10", fill: "#374151" }));
     svg.appendChild(
-      el("rect", { x: "16", y: "34", width: "40", height: "36", rx: "10", fill: "#1f2937" }),
+      el("rect", { x: "16", y: "34", width: "40", height: "36", rx: "10", fill: "#1f2937" })
     );
     svg.appendChild(
-      el("rect", { x: "16", y: "34", width: "40", height: "5", rx: "4", fill: c, opacity: "0.25" }),
+      el("rect", { x: "16", y: "34", width: "40", height: "5", rx: "4", fill: c, opacity: "0.25" })
     );
     svg.appendChild(el("polygon", { points: "36,1 52,14 20,14", fill: c }));
     svg.appendChild(el("ellipse", { cx: "36", cy: "14", rx: "20", ry: "4", fill: c }));
@@ -865,7 +887,7 @@ class WizardCharacter {
       width: "9",
       height: "2.5",
       rx: "1.2",
-      fill: "#e5e7eb",
+      fill: "#e5e7eb"
     });
     browL.setAttribute("transform", "rotate(-8 30 21)");
     svg.appendChild(browL);
@@ -875,20 +897,42 @@ class WizardCharacter {
       width: "9",
       height: "2.5",
       rx: "1.2",
-      fill: "#e5e7eb",
+      fill: "#e5e7eb"
     });
     browR.setAttribute("transform", "rotate(8 42 21)");
     svg.appendChild(browR);
-    const eyeL = el("ellipse", { cx: "30", cy: "26", rx: "3.5", ry: "3.5", fill: c });
+    const eyeL = el("ellipse", {
+      cx: "30",
+      cy: "26",
+      rx: "3.5",
+      ry: "3.5",
+      fill: c
+    });
     svg.appendChild(eyeL);
     this.eyeL = eyeL;
-    const eyeR = el("ellipse", { cx: "42", cy: "26", rx: "3.5", ry: "3.5", fill: c });
+    const eyeR = el("ellipse", {
+      cx: "42",
+      cy: "26",
+      rx: "3.5",
+      ry: "3.5",
+      fill: c
+    });
     svg.appendChild(eyeR);
     this.eyeR = eyeR;
-    const shineL = el("circle", { cx: "31.5", cy: "24.5", r: "1.2", fill: "white" });
+    const shineL = el("circle", {
+      cx: "31.5",
+      cy: "24.5",
+      r: "1.2",
+      fill: "white"
+    });
     svg.appendChild(shineL);
     this.eyeShineL = shineL;
-    const shineR = el("circle", { cx: "43.5", cy: "24.5", r: "1.2", fill: "white" });
+    const shineR = el("circle", {
+      cx: "43.5",
+      cy: "24.5",
+      r: "1.2",
+      fill: "white"
+    });
     svg.appendChild(shineR);
     this.eyeShineR = shineR;
     svg.appendChild(el("ellipse", { cx: "36", cy: "37", rx: "10", ry: "8", fill: "#e5e7eb" }));
@@ -898,7 +942,7 @@ class WizardCharacter {
       width: "10",
       height: "3",
       rx: "1.5",
-      fill: "#9ca3af",
+      fill: "#9ca3af"
     });
     svg.appendChild(mouth);
     this.mouthEl = mouth;
@@ -930,7 +974,7 @@ class WizardCharacter {
       setTimeout(() => {
         const dot = document.createElement("div");
         dot.className = "tmrg-sparkle";
-        const rad = ((i / 6) * 360 * Math.PI) / 180;
+        const rad = i / 6 * 360 * Math.PI / 180;
         const dist = 28 + Math.random() * 16;
         dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
         dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
@@ -1009,7 +1053,7 @@ class StarCharacter {
         this.blink();
         this.scheduleBlink();
       },
-      2500 + Math.random() * 3500,
+      2500 + Math.random() * 3500
     );
   }
   blink() {
@@ -1042,22 +1086,44 @@ class StarCharacter {
       return e;
     };
     svg.appendChild(
-      el("ellipse", { cx: "36", cy: "66", rx: "13", ry: "2.5", fill: "rgba(0,0,0,0.12)" }),
+      el("ellipse", { cx: "36", cy: "66", rx: "13", ry: "2.5", fill: "rgba(0,0,0,0.12)" })
     );
     svg.appendChild(el("polygon", { points: STAR_POINTS, fill: c }));
     svg.appendChild(el("circle", { cx: "36", cy: "38", r: "14", fill: "rgba(255,255,255,0.15)" }));
     svg.appendChild(el("circle", { cx: "29", cy: "36", r: "5", fill: "white" }));
     svg.appendChild(el("circle", { cx: "43", cy: "36", r: "5", fill: "white" }));
-    const eyeL = el("ellipse", { cx: "29", cy: "36", rx: "4", ry: "4", fill: "#1f2937" });
+    const eyeL = el("ellipse", {
+      cx: "29",
+      cy: "36",
+      rx: "4",
+      ry: "4",
+      fill: "#1f2937"
+    });
     svg.appendChild(eyeL);
     this.eyeL = eyeL;
-    const eyeR = el("ellipse", { cx: "43", cy: "36", rx: "4", ry: "4", fill: "#1f2937" });
+    const eyeR = el("ellipse", {
+      cx: "43",
+      cy: "36",
+      rx: "4",
+      ry: "4",
+      fill: "#1f2937"
+    });
     svg.appendChild(eyeR);
     this.eyeR = eyeR;
-    const shineL = el("circle", { cx: "31", cy: "34", r: "1.5", fill: "white" });
+    const shineL = el("circle", {
+      cx: "31",
+      cy: "34",
+      r: "1.5",
+      fill: "white"
+    });
     svg.appendChild(shineL);
     this.eyeShineL = shineL;
-    const shineR = el("circle", { cx: "45", cy: "34", r: "1.5", fill: "white" });
+    const shineR = el("circle", {
+      cx: "45",
+      cy: "34",
+      r: "1.5",
+      fill: "white"
+    });
     svg.appendChild(shineR);
     this.eyeShineR = shineR;
     svg.appendChild(el("circle", { cx: "21", cy: "41", r: "3.5", fill: "rgba(255,150,80,0.35)" }));
@@ -1068,7 +1134,7 @@ class StarCharacter {
       width: "12",
       height: "4",
       rx: "2",
-      fill: "#1f2937",
+      fill: "#1f2937"
     });
     svg.appendChild(mouth);
     this.mouthEl = mouth;
@@ -1100,7 +1166,7 @@ class StarCharacter {
       setTimeout(() => {
         const dot = document.createElement("div");
         dot.className = "tmrg-sparkle";
-        const rad = ((i / 6) * 360 * Math.PI) / 180;
+        const rad = i / 6 * 360 * Math.PI / 180;
         const dist = 28 + Math.random() * 16;
         dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
         dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
@@ -1177,6 +1243,8 @@ class SliceCharacter {
     this.headPath = null;
     this.eyeL = null;
     this.eyeR = null;
+    this.eyeShineL = null;
+    this.eyeShineR = null;
   }
   // ─── private ───────────────────────────────────────────────────
   scheduleBlink() {
@@ -1185,7 +1253,7 @@ class SliceCharacter {
         this.blink();
         this.scheduleBlink();
       },
-      2500 + Math.random() * 3500,
+      2500 + Math.random() * 3500
     );
   }
   /** Close the irises (ry → 0.6) for 120ms then reopen. */
@@ -1219,30 +1287,52 @@ class SliceCharacter {
       return e;
     };
     svg.appendChild(
-      el("ellipse", { cx: "36", cy: "70", rx: "16", ry: "3", fill: "rgba(0,0,0,0.12)" }),
+      el("ellipse", { cx: "36", cy: "70", rx: "16", ry: "3", fill: "rgba(0,0,0,0.12)" })
     );
     svg.appendChild(el("rect", { x: "24", y: "44", width: "24", height: "13", rx: "7", fill: c }));
     svg.appendChild(
-      el("rect", { x: "25", y: "55", width: "8", height: "9", rx: "4", fill: "#374151" }),
+      el("rect", { x: "25", y: "55", width: "8", height: "9", rx: "4", fill: "#374151" })
     );
     svg.appendChild(
-      el("rect", { x: "39", y: "55", width: "8", height: "9", rx: "4", fill: "#374151" }),
+      el("rect", { x: "39", y: "55", width: "8", height: "9", rx: "4", fill: "#374151" })
     );
     const headPath = el("path", { d: PATH_OPEN, fill: c });
     svg.appendChild(headPath);
     this.headPath = headPath;
     svg.appendChild(el("circle", { cx: "24", cy: "21", r: "4.5", fill: "white" }));
-    svg.appendChild(el("circle", { cx: "30", cy: "13", r: "4.5", fill: "white" }));
-    const eyeL = el("ellipse", { cx: "24", cy: "21", rx: "3", ry: "3", fill: "#1f2937" });
+    svg.appendChild(el("circle", { cx: "30", cy: "14", r: "4.5", fill: "white" }));
+    const eyeL = el("ellipse", {
+      cx: "24",
+      cy: "21",
+      rx: "3",
+      ry: "3",
+      fill: "#1f2937"
+    });
     svg.appendChild(eyeL);
     this.eyeL = eyeL;
-    const eyeR = el("ellipse", { cx: "30", cy: "14", rx: "3", ry: "3", fill: "#1f2937" });
+    const eyeR = el("ellipse", {
+      cx: "30",
+      cy: "14",
+      rx: "3",
+      ry: "3",
+      fill: "#1f2937"
+    });
     svg.appendChild(eyeR);
     this.eyeR = eyeR;
-    const shineL = el("circle", { cx: "25.5", cy: "19.5", r: "1.2", fill: "white" });
+    const shineL = el("circle", {
+      cx: "25.5",
+      cy: "19.5",
+      r: "1.2",
+      fill: "white"
+    });
     svg.appendChild(shineL);
     this.eyeShineL = shineL;
-    const shineR = el("circle", { cx: "31.5", cy: "12.5", r: "1.2", fill: "white" });
+    const shineR = el("circle", {
+      cx: "31.5",
+      cy: "12.5",
+      r: "1.2",
+      fill: "white"
+    });
     svg.appendChild(shineR);
     this.eyeShineR = shineR;
     return svg;
@@ -1271,7 +1361,7 @@ class SliceCharacter {
       setTimeout(() => {
         const dot = document.createElement("div");
         dot.className = "tmrg-sparkle";
-        const rad = ((i / 6) * 360 * Math.PI) / 180;
+        const rad = i / 6 * 2 * Math.PI;
         const dist = 28 + Math.random() * 16;
         dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
         dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
@@ -1332,7 +1422,9 @@ class OrbitCharacter {
     } else {
       (_c = this.eyeL) == null ? void 0 : _c.setAttribute("cy", "31");
       (_d = this.eyeR) == null ? void 0 : _d.setAttribute("cy", "31");
-      this.orbitSpeed = state === "celebrating" ? 4 : state === "talking" ? 1.4 : 0.8;
+      if (state === "celebrating") this.orbitSpeed = 4;
+      else if (state === "talking") this.orbitSpeed = 1.4;
+      else this.orbitSpeed = 0.8;
     }
     if (state === "talking") {
       this.startMouthAnim();
@@ -1365,7 +1457,7 @@ class OrbitCharacter {
         this.blink();
         this.scheduleBlink();
       },
-      2500 + Math.random() * 3500,
+      2500 + Math.random() * 3500
     );
   }
   blink() {
@@ -1397,18 +1489,18 @@ class OrbitCharacter {
     }
   }
   updateSatellites() {
-    const deg = (this.orbitAngle * Math.PI) / 180;
+    const deg = this.orbitAngle * Math.PI / 180;
     if (this.sat1) {
       this.sat1.setAttribute("cx", String(OX + 23 * Math.cos(deg)));
       this.sat1.setAttribute("cy", String(OY + 23 * Math.sin(deg)));
     }
     if (this.sat2) {
-      const a2 = ((this.orbitAngle * 0.7 + 120) * Math.PI) / 180;
+      const a2 = (this.orbitAngle * 0.7 + 120) * Math.PI / 180;
       this.sat2.setAttribute("cx", String(OX + 31 * Math.cos(a2)));
       this.sat2.setAttribute("cy", String(OY + 31 * Math.sin(a2)));
     }
     if (this.sat3) {
-      const a3 = ((this.orbitAngle * 0.5 + 240) * Math.PI) / 180;
+      const a3 = (this.orbitAngle * 0.5 + 240) * Math.PI / 180;
       this.sat3.setAttribute("cx", String(OX + 38 * Math.cos(a3)));
       this.sat3.setAttribute("cy", String(OY + 38 * Math.sin(a3)));
     }
@@ -1431,9 +1523,14 @@ class OrbitCharacter {
       return e;
     };
     svg.appendChild(
-      el("ellipse", { cx: "36", cy: "70", rx: "18", ry: "3", fill: "rgba(0,0,0,0.12)" }),
+      el("ellipse", { cx: "36", cy: "70", rx: "18", ry: "3", fill: "rgba(0,0,0,0.12)" })
     );
-    const sat1 = el("circle", { cx: String(OX + 23), cy: String(OY), r: "4", fill: c });
+    const sat1 = el("circle", {
+      cx: String(OX + 23),
+      cy: String(OY),
+      r: "4",
+      fill: c
+    });
     svg.appendChild(sat1);
     this.sat1 = sat1;
     const sat2 = el("circle", {
@@ -1441,7 +1538,7 @@ class OrbitCharacter {
       cy: String(OY - 27),
       r: "3",
       fill: c,
-      opacity: "0.8",
+      opacity: "0.8"
     });
     svg.appendChild(sat2);
     this.sat2 = sat2;
@@ -1450,7 +1547,7 @@ class OrbitCharacter {
       cy: String(OY + 33),
       r: "2.5",
       fill: c,
-      opacity: "0.65",
+      opacity: "0.65"
     });
     svg.appendChild(sat3);
     this.sat3 = sat3;
@@ -1464,19 +1561,41 @@ class OrbitCharacter {
         fill: "none",
         stroke: c,
         "stroke-width": "1.2",
-        opacity: "0.25",
-      }),
+        opacity: "0.25"
+      })
     );
-    const eyeL = el("ellipse", { cx: "28", cy: "31", rx: "4", ry: "4", fill: c });
+    const eyeL = el("ellipse", {
+      cx: "28",
+      cy: "31",
+      rx: "4",
+      ry: "4",
+      fill: c
+    });
     svg.appendChild(eyeL);
     this.eyeL = eyeL;
-    const eyeR = el("ellipse", { cx: "44", cy: "31", rx: "4", ry: "4", fill: c });
+    const eyeR = el("ellipse", {
+      cx: "44",
+      cy: "31",
+      rx: "4",
+      ry: "4",
+      fill: c
+    });
     svg.appendChild(eyeR);
     this.eyeR = eyeR;
-    const shineL = el("circle", { cx: "30", cy: "29", r: "1.5", fill: "white" });
+    const shineL = el("circle", {
+      cx: "30",
+      cy: "29",
+      r: "1.5",
+      fill: "white"
+    });
     svg.appendChild(shineL);
     this.eyeShineL = shineL;
-    const shineR = el("circle", { cx: "46", cy: "29", r: "1.5", fill: "white" });
+    const shineR = el("circle", {
+      cx: "46",
+      cy: "29",
+      r: "1.5",
+      fill: "white"
+    });
     svg.appendChild(shineR);
     this.eyeShineR = shineR;
     const mouth = el("rect", {
@@ -1486,7 +1605,7 @@ class OrbitCharacter {
       height: "4",
       rx: "2",
       fill: c,
-      opacity: "0.55",
+      opacity: "0.55"
     });
     svg.appendChild(mouth);
     this.mouthEl = mouth;
@@ -1518,7 +1637,7 @@ class OrbitCharacter {
       setTimeout(() => {
         const dot = document.createElement("div");
         dot.className = "tmrg-sparkle";
-        const rad = ((i / 6) * 360 * Math.PI) / 180;
+        const rad = i / 6 * 360 * Math.PI / 180;
         const dist = 28 + Math.random() * 16;
         dot.style.setProperty("--sx", `${Math.cos(rad) * dist}px`);
         dot.style.setProperty("--sy", `${Math.sin(rad) * dist}px`);
@@ -1860,9 +1979,7 @@ class SpotlightManager {
     const color = opts.color ?? "#ff6700";
     const width = opts.ringWidth ?? 3;
     const fadeDuration = opts.fadeDuration ?? 4e3;
-    const glowHex = Math.round(0.25 * 255)
-      .toString(16)
-      .padStart(2, "0");
+    const glowHex = Math.round(0.25 * 255).toString(16).padStart(2, "0");
     const shadow = `0 0 0 ${width}px ${color}, 0 0 0 ${width * 2}px ${color}${glowHex}`;
     const shadowWide = `0 0 0 ${width + 2}px ${color}, 0 0 0 ${(width + 2) * 2}px ${color}${glowHex}`;
     this.ring.style.setProperty("--tmrg-ring-shadow", shadow);
@@ -1959,7 +2076,9 @@ class SpotlightManager {
     (_a = this.resizeObs) == null ? void 0 : _a.disconnect();
     this.resizeObs = null;
     if (this.scrollHandler) {
-      window.removeEventListener("scroll", this.scrollHandler, { capture: true });
+      window.removeEventListener("scroll", this.scrollHandler, {
+        capture: true
+      });
       window.removeEventListener("resize", this.scrollHandler);
       this.scrollHandler = null;
     }
@@ -2527,12 +2646,7 @@ class BubbleManager {
       onDone == null ? void 0 : onDone();
       return;
     }
-    const plain = text
-      .replace(/\*\*(.*?)\*\*/g, "$1")
-      .replace(/\*(.*?)\*/g, "$1")
-      .replace(/`([^`]+)`/g, "$1")
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-      .replace(/^[-*]\s+/gm, "• ");
+    const plain = text.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1").replace(/`([^`]+)`/g, "$1").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/^[-*]\s+/gm, "• ");
     let i = 0;
     this.textEl.textContent = "";
     const REPOSITION_EVERY = 30;
@@ -2580,18 +2694,10 @@ class BubbleManager {
       }
     }
     if (inList) out.push("</ul>");
-    return out
-      .join("\n")
-      .replace(/<\/ul>\n/g, "</ul>")
-      .replace(/\n<ul>/g, "<ul>")
-      .replace(/\n/g, "<br>");
+    return out.join("\n").replace(/<\/ul>\n/g, "</ul>").replace(/\n<ul>/g, "<ul>").replace(/\n/g, "<br>");
   }
   inlineMarkdown(text) {
-    return text
-      .replace(/`([^`]+)`/g, '<code class="tmrg-code">$1</code>')
-      .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
-      .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    return text.replace(/`([^`]+)`/g, '<code class="tmrg-code">$1</code>').replace(/\*\*(.*?)\*\*/g, "<b>$1</b>").replace(/\*([^*]+)\*/g, "<em>$1</em>").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
   }
   renderFollowUps(followUps) {
     if (!this.followupsEl || followUps.length === 0) return;
@@ -2683,12 +2789,12 @@ class BubbleManager {
     this.bubble.querySelector(".tmrg-bubble-send").disabled = true;
   }
 }
-const FALLBACK_MSG =
-  "I'm having trouble connecting right now. You can reach our support team via the chat bubble in the corner.";
+const FALLBACK_MSG = "I'm having trouble connecting right now. You can reach our support team via the chat bubble in the corner.";
 const TIMEOUT_MS = 2e4;
 class AIManager {
-  constructor(apiEndpoint, userId, emailId) {
+  constructor(apiEndpoint, apiKey, userId, emailId) {
     this.apiEndpoint = apiEndpoint;
+    this.apiKey = apiKey;
     this.userId = userId;
     this.emailId = emailId;
     this.history = [];
@@ -2706,24 +2812,28 @@ class AIManager {
       emailId: this.emailId ?? null,
       message,
       history,
-      subscriptionContext:
-        typeof context.subscriptionContext === "string" ? context.subscriptionContext : void 0,
+      subscriptionContext: typeof context.subscriptionContext === "string" ? context.subscriptionContext : void 0
     };
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
     try {
       const res = await fetch(this.apiEndpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.apiKey}`
+        },
         body: JSON.stringify(body),
-        signal: controller.signal,
+        signal: controller.signal
       });
       clearTimeout(timeoutId);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const replyText = data.response ?? data.message ?? "";
       const followUps = Array.isArray(data.followUps) ? data.followUps : [];
-      const sources = Array.isArray(data.sources) ? data.sources : [];
+      const sources = Array.isArray(
+        data.sources
+      ) ? data.sources : [];
       this.history.push({ role: "user", content: message });
       this.history.push({ role: "assistant", content: replyText });
       return { message: replyText, followUps, sources };
@@ -2731,7 +2841,7 @@ class AIManager {
       clearTimeout(timeoutId);
       const isTimeout = err instanceof DOMException && err.name === "AbortError";
       return {
-        message: isTimeout ? "That took too long — please try again in a moment." : FALLBACK_MSG,
+        message: isTimeout ? "That took too long — please try again in a moment." : FALLBACK_MSG
       };
     }
   }
@@ -2848,24 +2958,7 @@ class TMRGuideSDK {
     root.appendChild(charContainer);
     this.charContainer = charContainer;
     const charOpt = config.character ?? "bot";
-    const char =
-      charOpt === "owl"
-        ? new OwlCharacter(this.charSize, primaryColor)
-        : charOpt === "astronaut"
-          ? new AstronautCharacter(this.charSize, primaryColor)
-          : charOpt === "wizard"
-            ? new WizardCharacter(this.charSize, primaryColor)
-            : charOpt === "star"
-              ? new StarCharacter(this.charSize, primaryColor)
-              : charOpt === "slice"
-                ? new SliceCharacter(this.charSize, primaryColor)
-                : charOpt === "orbit"
-                  ? new OrbitCharacter(this.charSize, primaryColor)
-                  : charOpt === "bot"
-                    ? new BotCharacter(this.charSize, primaryColor)
-                    : typeof charOpt === "string"
-                      ? new BotCharacter(this.charSize, primaryColor)
-                      : charOpt;
+    const char = charOpt === "owl" ? new OwlCharacter(this.charSize, primaryColor) : charOpt === "astronaut" ? new AstronautCharacter(this.charSize, primaryColor) : charOpt === "wizard" ? new WizardCharacter(this.charSize, primaryColor) : charOpt === "star" ? new StarCharacter(this.charSize, primaryColor) : charOpt === "slice" ? new SliceCharacter(this.charSize, primaryColor) : charOpt === "orbit" ? new OrbitCharacter(this.charSize, primaryColor) : charOpt === "bot" ? new BotCharacter(this.charSize, primaryColor) : typeof charOpt === "string" ? new BotCharacter(this.charSize, primaryColor) : charOpt;
     char.mount(charContainer);
     this.character = char;
     const { x: cx, y: cy } = this.cornerPosition();
@@ -2881,13 +2974,18 @@ class TMRGuideSDK {
       () => this.hide(),
       (rating, question) => {
         var _a2, _b2;
-        return (_b2 = (_a2 = this.config) == null ? void 0 : _a2.onFeedback) == null
-          ? void 0
-          : _b2.call(_a2, rating, question);
-      },
+        return (_b2 = (_a2 = this.config) == null ? void 0 : _a2.onFeedback) == null ? void 0 : _b2.call(_a2, rating, question);
+      }
     );
-    this.bubble.setRepositionFn(() => this.bubble.positionNear(this.charX, this.charY));
-    this.ai = new AIManager(config.apiEndpoint, config.userId, config.emailId);
+    this.bubble.setRepositionFn(
+      () => this.bubble.positionNear(this.charX, this.charY)
+    );
+    this.ai = new AIManager(
+      config.apiEndpoint,
+      config.apiKey,
+      config.userId,
+      config.emailId
+    );
     this.tourMgr = new TourManager();
     this.renderToggleBtn();
     charContainer.addEventListener("click", () => {
@@ -2909,27 +3007,31 @@ class TMRGuideSDK {
     this.assertInit();
     this.currentOptions = options;
     (_b = (_a = this.config).onStepChange) == null ? void 0 : _b.call(_a, options.stepId);
-    if (!((_c = this.tourMgr) == null ? void 0 : _c.isActive()))
-      (_d = this.bubble) == null ? void 0 : _d.setOnNext(null);
+    if (!((_c = this.tourMgr) == null ? void 0 : _c.isActive())) (_d = this.bubble) == null ? void 0 : _d.setOnNext(null);
     if (!this.enabled) return;
     this.isVisible = true;
     const primaryColor = ((_e = this.config.theme) == null ? void 0 : _e.primaryColor) ?? "#ff6700";
     if (options.target && !document.querySelector(options.target)) {
-      console.warn(`[tmr-guide] target "${options.target}" not found for step "${options.stepId}"`);
+      console.warn(
+        `[tmr-guide] target "${options.target}" not found for step "${options.stepId}"`
+      );
     }
     const rect = options.target ? getRect(options.target) : null;
-    const targetPos = rect
-      ? computeCharacterPosition(rect, options.position ?? "right", this.charSize)
-      : this.cornerPosition();
-    const isAlreadyNear =
-      Math.abs(this.charX - targetPos.x) < 4 && Math.abs(this.charY - targetPos.y) < 4;
+    const targetPos = rect ? computeCharacterPosition(
+      rect,
+      options.position ?? "right",
+      this.charSize
+    ) : this.cornerPosition();
+    const isAlreadyNear = Math.abs(this.charX - targetPos.x) < 4 && Math.abs(this.charY - targetPos.y) < 4;
     if (!isAlreadyNear) {
       this.character.setState("walking");
     }
     this.charX = targetPos.x;
     this.charY = targetPos.y;
     this.applyCharPosition();
-    this.bubble.setTargetCenterX(rect ? rect.left + rect.width / 2 : void 0);
+    this.bubble.setTargetCenterX(
+      rect ? rect.left + rect.width / 2 : void 0
+    );
     const delay = isAlreadyNear ? 0 : 500;
     setTimeout(() => {
       this.character.setState("talking");
@@ -2939,7 +3041,7 @@ class TMRGuideSDK {
           mode: hl.mode ?? "persistent",
           color: hl.color ?? primaryColor,
           ringWidth: hl.ringWidth ?? 3,
-          fadeDuration: hl.fadeDuration ?? 4e3,
+          fadeDuration: hl.fadeDuration ?? 4e3
         });
       }
       this.bubble.show(options.message, options.showInput ?? false);
@@ -2984,18 +3086,20 @@ class TMRGuideSDK {
   async ask(text) {
     var _a, _b, _c, _d;
     this.assertInit();
-    (_b = (_a = this.config) == null ? void 0 : _a.onAskQuestion) == null
-      ? void 0
-      : _b.call(_a, text);
+    (_b = (_a = this.config) == null ? void 0 : _a.onAskQuestion) == null ? void 0 : _b.call(_a, text);
     const context = {
-      ...(((_c = this.currentOptions) == null ? void 0 : _c.context) ?? {}),
-      stepId: ((_d = this.currentOptions) == null ? void 0 : _d.stepId) ?? "unknown",
+      ...((_c = this.currentOptions) == null ? void 0 : _c.context) ?? {},
+      stepId: ((_d = this.currentOptions) == null ? void 0 : _d.stepId) ?? "unknown"
     };
     this.character.setState("thinking");
     this.bubble.showLoading();
     const response = await this.ai.ask(text, context);
     this.character.setState("talking");
-    this.bubble.showResponse(response.message, response.followUps ?? [], response.sources ?? []);
+    this.bubble.showResponse(
+      response.message,
+      response.followUps ?? [],
+      response.sources ?? []
+    );
     setTimeout(() => this.character.setState("idle"), 1800);
   }
   /** Celebrate a milestone (character jumps, optional message in bubble) */
@@ -3005,7 +3109,9 @@ class TMRGuideSDK {
     this.character.setState("celebrating");
     if (message) {
       this.bubble.show(message);
-      requestAnimationFrame(() => this.bubble.positionNear(this.charX, this.charY));
+      requestAnimationFrame(
+        () => this.bubble.positionNear(this.charX, this.charY)
+      );
       this.isVisible = true;
       this.attachClickOutside();
     }
@@ -3077,13 +3183,7 @@ class TMRGuideSDK {
     var _a;
     const opts = this.currentOptions;
     const rect = (opts == null ? void 0 : opts.target) ? getRect(opts.target) : null;
-    const newPos = rect
-      ? computeCharacterPosition(
-          rect,
-          (opts == null ? void 0 : opts.position) ?? "right",
-          this.charSize,
-        )
-      : this.cornerPosition();
+    const newPos = rect ? computeCharacterPosition(rect, (opts == null ? void 0 : opts.position) ?? "right", this.charSize) : this.cornerPosition();
     this.charX = newPos.x;
     this.charY = newPos.y;
     this.applyCharPosition();
@@ -3218,7 +3318,10 @@ class TMRGuideSDK {
     this.charContainer.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      this.showContextMenu(e.clientX, e.clientY);
+      this.showContextMenu(
+        e.clientX,
+        e.clientY
+      );
     });
   }
   showContextMenu(x, y) {
@@ -3242,8 +3345,7 @@ class TMRGuideSDK {
     menu.appendChild(item);
     document.body.appendChild(menu);
     this.contextMenu = menu;
-    const vw = window.innerWidth,
-      vh = window.innerHeight;
+    const vw = window.innerWidth, vh = window.innerHeight;
     menu.style.left = `${Math.min(x, vw - 180)}px`;
     menu.style.top = `${Math.min(y, vh - 48)}px`;
     const onOutside = (e) => {
@@ -3273,7 +3375,9 @@ class TMRGuideSDK {
         if (this.root && path.includes(this.root)) return;
         this.hide();
       };
-      document.addEventListener("click", this.clickOutsideHandler, { passive: true });
+      document.addEventListener("click", this.clickOutsideHandler, {
+        passive: true
+      });
     }, 0);
   }
   detachClickOutside() {
@@ -3295,6 +3399,6 @@ export {
   SliceCharacter,
   StarCharacter,
   TMRGuide,
-  WizardCharacter,
+  WizardCharacter
 };
 //# sourceMappingURL=tmr-guide.esm.js.map

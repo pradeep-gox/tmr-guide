@@ -36,6 +36,7 @@ import { TMRGuide } from "tmr-guide";
 // 1. Initialize once (e.g. on page load / component mount)
 TMRGuide.init({
   apiEndpoint: "/api/onboarding/assist",
+  apiKey: "",
   userId: "user-123",
   emailId: "user@example.com",
   theme: { primaryColor: "#ff6700", characterSize: 72 },
@@ -71,6 +72,7 @@ TMRGuide.destroy();
 | Option                   | Type                         | Default          | Description                                         |
 | ------------------------ | ---------------------------- | ---------------- | --------------------------------------------------- |
 | `apiEndpoint`            | `string`                     | **required**     | URL to POST AI questions to                         |
+| `apiKey`                 | `string`                     | **required**     | API key for authentication                          |
 | `userId`                 | `string`                     | —                | Forwarded to AI backend                             |
 | `emailId`                | `string`                     | —                | Forwarded to AI backend                             |
 | `theme.primaryColor`     | `string`                     | `"#ff6700"`      | Ring, bubble accent, robot eye colour               |
@@ -187,6 +189,7 @@ When the user submits a question, the SDK posts:
 ```
 POST {apiEndpoint}
 Content-Type: application/json
+Authorization: Bearer {apiKey}
 
 {
   "sessionId": "<uuid>",

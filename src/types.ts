@@ -1,4 +1,9 @@
-export type CharacterState = "idle" | "walking" | "talking" | "thinking" | "celebrating";
+export type CharacterState =
+  | "idle"
+  | "walking"
+  | "talking"
+  | "thinking"
+  | "celebrating";
 
 export interface CharacterRenderer {
   mount(container: HTMLElement): void;
@@ -6,7 +11,11 @@ export interface CharacterRenderer {
   destroy(): void;
 }
 
-export type IdlePosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+export type IdlePosition =
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right";
 
 /**
  * Controls how the Enable / Disable Guide toggle is presented.
@@ -17,7 +26,12 @@ export type IdlePosition = "top-left" | "top-right" | "bottom-left" | "bottom-ri
  * - "corner-chip"  — separate fixed pill anchored to the same viewport corner as idlePosition
  * - "context-menu" — no persistent UI; right-click the character to open a tiny menu
  */
-export type ToggleStyle = "below" | "hover" | "badge" | "corner-chip" | "context-menu";
+export type ToggleStyle =
+  | "below"
+  | "hover"
+  | "badge"
+  | "corner-chip"
+  | "context-menu";
 
 /**
  * Built-in character names.
@@ -29,7 +43,14 @@ export type ToggleStyle = "below" | "hover" | "badge" | "corner-chip" | "context
  * - "slice"      — TMR logo quarter-circle that chomps when talking
  * - "orbit"      — data-point planet with three orbiting satellites
  */
-export type BuiltinCharacter = "bot" | "owl" | "astronaut" | "wizard" | "star" | "slice" | "orbit";
+export type BuiltinCharacter =
+  | "bot"
+  | "owl"
+  | "astronaut"
+  | "wizard"
+  | "star"
+  | "slice"
+  | "orbit";
 
 /**
  * Controls how the spotlight highlight behaves when pointing at a target element.
@@ -44,6 +65,8 @@ export type HighlightMode = "persistent" | "timed" | "ring-only" | "pulse";
 export interface TMRGuideConfig {
   /** Endpoint to call for AI responses. e.g. '/api/onboarding/assist' */
   apiEndpoint: string;
+  /** API key for authentication. */
+  apiKey: string;
   /**
    * Which character to display.
    * - A built-in name: `"bot"` (default robot) or `"owl"`

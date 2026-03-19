@@ -57,7 +57,9 @@ export class OrbitCharacter implements CharacterRenderer {
     } else {
       this.eyeL?.setAttribute("cy", "31");
       this.eyeR?.setAttribute("cy", "31");
-      this.orbitSpeed = state === "celebrating" ? 4.0 : state === "talking" ? 1.4 : 0.8;
+      if (state === "celebrating") this.orbitSpeed = 4.0;
+      else if (state === "talking") this.orbitSpeed = 1.4;
+      else this.orbitSpeed = 0.8;
     }
 
     if (state === "talking") {
