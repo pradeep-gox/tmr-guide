@@ -121,13 +121,15 @@ class TMRGuideSDK {
     // Toggle button (enable/disable guide)
     this.renderToggleBtn();
 
-    // Click on character: when enabled toggles bubble; when disabled does nothing
+    // Click on character: when enabled toggles bubble; when disabled does nothing.
+    // Always force showInput:true on explicit open — showInput:false is only for
+    // tour beats where the input would distract from the spotlighted target.
     charContainer.addEventListener("click", () => {
       if (!this.enabled) return;
       if (this.isVisible) {
         this.hide();
       } else if (this.currentOptions) {
-        this.show(this.currentOptions);
+        this.show({ ...this.currentOptions, showInput: true });
       }
     });
 
@@ -297,7 +299,8 @@ class TMRGuideSDK {
     localStorage.setItem(this.STORAGE_KEY, "true");
     this.updateToggleBtn();
     if (this.currentOptions) {
-      this.show(this.currentOptions);
+      // Force showInput:true on re-enable — same reason as the character click handler.
+      this.show({ ...this.currentOptions, showInput: true });
     }
   }
 

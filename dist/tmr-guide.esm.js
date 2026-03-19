@@ -3006,7 +3006,7 @@ class TMRGuideSDK {
       if (this.isVisible) {
         this.hide();
       } else if (this.currentOptions) {
-        this.show(this.currentOptions);
+        this.show({ ...this.currentOptions, showInput: true });
       }
     });
     this.resizeHandler = () => {
@@ -3138,7 +3138,7 @@ class TMRGuideSDK {
     localStorage.setItem(this.STORAGE_KEY, "true");
     this.updateToggleBtn();
     if (this.currentOptions) {
-      this.show(this.currentOptions);
+      this.show({ ...this.currentOptions, showInput: true });
     }
   }
   /** Disable the guide — character idles in the corner; progress is still tracked */
