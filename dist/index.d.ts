@@ -38,6 +38,7 @@ declare class TMRGuideSDK {
     /** Replace the default bot character with a custom renderer */
     setCharacter(renderer: CharacterRenderer): void;
     destroy(): void;
+    updateApiKey(apiKey: string): void;
     private handleResize;
     private applyCharPosition;
     private cornerPosition;

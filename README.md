@@ -178,6 +178,9 @@ TMRGuide.setCharacter(renderer: CharacterRenderer): void
 
 // Tear down — removes all DOM, cancels all timers
 TMRGuide.destroy(): void
+
+// Update api key
+TMRGuide.updateApiKey(apiKey: string): void
 ```
 
 ---

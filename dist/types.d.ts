@@ -42,7 +42,7 @@ export interface TMRGuideConfig {
     apiKey: string;
     /**
      * Which character to display.
-     * - A built-in name: `"bot"` (default robot) or `"owl"`
+     * - A built-in name: `"bot"` | `"owl"` | `"astronaut"` | `"wizard"` | `"star"` | `"slice"` | `"orbit"`
      * - A custom `CharacterRenderer` instance for a fully bespoke character
      * Default: `"bot"`
      */

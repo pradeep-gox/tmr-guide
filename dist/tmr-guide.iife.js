@@ -2802,6 +2802,9 @@ var TMRGuide = function(exports) {
       this.history = [];
       this.sessionId = crypto.randomUUID();
     }
+    updateApiKey(apiKey) {
+      this.apiKey = apiKey;
+    }
     /**
      * Ask TMR AI Assistant a question.
      * Automatically times out after 20 seconds and returns a friendly fallback.
@@ -2960,7 +2963,17 @@ var TMRGuide = function(exports) {
       root.appendChild(charContainer);
       this.charContainer = charContainer;
       const charOpt = config.character ?? "bot";
-      const char = charOpt === "owl" ? new OwlCharacter(this.charSize, primaryColor) : charOpt === "astronaut" ? new AstronautCharacter(this.charSize, primaryColor) : charOpt === "wizard" ? new WizardCharacter(this.charSize, primaryColor) : charOpt === "star" ? new StarCharacter(this.charSize, primaryColor) : charOpt === "slice" ? new SliceCharacter(this.charSize, primaryColor) : charOpt === "orbit" ? new OrbitCharacter(this.charSize, primaryColor) : charOpt === "bot" ? new BotCharacter(this.charSize, primaryColor) : typeof charOpt === "string" ? new BotCharacter(this.charSize, primaryColor) : charOpt;
+      const BUILT_IN = {
+        bot: BotCharacter,
+        owl: OwlCharacter,
+        astronaut: AstronautCharacter,
+        wizard: WizardCharacter,
+        star: StarCharacter,
+        slice: SliceCharacter,
+        orbit: OrbitCharacter
+      };
+      const Ctor = typeof charOpt === "string" ? BUILT_IN[charOpt] ?? BotCharacter : null;
+      const char = Ctor ? new Ctor(this.charSize, primaryColor) : charOpt;
       char.mount(charContainer);
       this.character = char;
       const { x: cx, y: cy } = this.cornerPosition();
@@ -3179,6 +3192,11 @@ var TMRGuide = function(exports) {
       this.currentOptions = null;
       this.config = null;
       this.isVisible = false;
+    }
+    updateApiKey(apiKey) {
+      if (this.ai) {
+        this.ai.updateApiKey(apiKey);
+      }
     }
     // ─── Private ────────────────────────────────────────────────────
     handleResize() {

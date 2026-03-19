@@ -72,24 +72,19 @@ class TMRGuideSDK {
 
     // Character renderer — built-in name, custom instance, or default bot
     const charOpt = config.character ?? "bot";
-    const char: CharacterRenderer =
-      charOpt === "owl"
-        ? new OwlCharacter(this.charSize, primaryColor)
-        : charOpt === "astronaut"
-          ? new AstronautCharacter(this.charSize, primaryColor)
-          : charOpt === "wizard"
-            ? new WizardCharacter(this.charSize, primaryColor)
-            : charOpt === "star"
-              ? new StarCharacter(this.charSize, primaryColor)
-              : charOpt === "slice"
-                ? new SliceCharacter(this.charSize, primaryColor)
-                : charOpt === "orbit"
-                  ? new OrbitCharacter(this.charSize, primaryColor)
-                  : charOpt === "bot"
-                    ? new BotCharacter(this.charSize, primaryColor)
-                    : typeof charOpt === "string"
-                      ? new BotCharacter(this.charSize, primaryColor) // unknown name → fallback
-                      : charOpt; // custom CharacterRenderer passed directly
+    const BUILT_IN: Record<string, new (size: number, color: string) => CharacterRenderer> = {
+      bot: BotCharacter,
+      owl: OwlCharacter,
+      astronaut: AstronautCharacter,
+      wizard: WizardCharacter,
+      star: StarCharacter,
+      slice: SliceCharacter,
+      orbit: OrbitCharacter,
+    };
+    const Ctor = typeof charOpt === "string" ? (BUILT_IN[charOpt] ?? BotCharacter) : null;
+    const char: CharacterRenderer = Ctor
+      ? new Ctor(this.charSize, primaryColor)
+      : (charOpt as CharacterRenderer); // custom CharacterRenderer passed directly
     char.mount(charContainer);
     this.character = char;
 
@@ -356,6 +351,12 @@ class TMRGuideSDK {
     this.currentOptions = null;
     this.config = null;
     this.isVisible = false;
+  }
+
+  updateApiKey(apiKey: string): void {
+    if (this.ai) {
+      this.ai.updateApiKey(apiKey);
+    }
   }
 
   // ─── Private ────────────────────────────────────────────────────

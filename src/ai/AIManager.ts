@@ -11,11 +11,15 @@ export class AIManager {
 
   constructor(
     private readonly apiEndpoint: string,
-    private readonly apiKey: string,
+    private apiKey: string,
     private readonly userId?: string,
     private readonly emailId?: string,
   ) {
     this.sessionId = crypto.randomUUID();
+  }
+
+  updateApiKey(apiKey: string): void {
+    this.apiKey = apiKey;
   }
 
   /**
